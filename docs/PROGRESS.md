@@ -1,64 +1,65 @@
-# 進度追蹤 Progress Tracker
+# 進度追蹤 Progress Tracker — 850 Sip & Charge Map
 
 > 計畫書：[PLAN.md](PLAN.md) · 最後更新：2026-10-12
 >
-> 圖例：⬜ 未開始 · 🟨 進行中 · ✅ 完成（已驗證）· ⏸️ 等你決定
+> 圖例：⬜ 未開始 · 🟨 進行中 · ✅ 完成（已驗證）· ⏸️ 等你
 
 ## 目前狀態
 
-**Phase 0 — 規劃完成、決定事項已確認（網站名稱待定）。下一步：Astro 骨架 + Pages 部署。**
+**規劃完成，等你說「go」開始 Phase 0.6。**
 
 ---
 
-## Phase 0 — 準備
+## Phase 0：準備
 
 | # | 任務 | 狀態 | 驗證方式 | 驗證結果 |
 |---|---|---|---|---|
-| 0.1 | 撰寫計畫書、進度表、README | ✅ | 你閱讀確認 | — |
-| 0.2 | 實測 OSM 資料可用性 | ✅ | Overpass 查詢 | 37 間咖啡店；10 間有 Wi-Fi 標記；20 間有營業時間 |
-| 0.3 | 決定回報方式、logo、repo、測試 | ✅ | 你回覆 | 見 PLAN §12；網站名稱仍待定 |
-| 0.4 | `git init` + 第一次 commit | ✅ | `git log` | main 分支，規劃文件已 commit |
+| 0.1 | 撰寫計畫書、進度表、README | ✅ | 你閱讀確認 | 已依第二輪回饋修訂 |
+| 0.2 | 實測 OSM 資料可不可用 | ✅ | Overpass 查詢 | 37 間咖啡店；10 間有 Wi-Fi 標記；20 間有營業時間 |
+| 0.3 | 決定名稱、回報方式、logo、配色、repo、安裝原則 | ✅ | 你回覆 | 見 PLAN §13 |
+| 0.4 | `git init` + 第一次 commit | ✅ | `git log` | main 分支 |
 | 0.5 | 建立 GitHub repo 並 push | ✅ | `gh repo view` | public：github.com/chungenyu6/pns-power-wifi-map |
-| 0.6 | Astro 專案骨架（`npm install`） | ⬜ | `npm run build` 成功 | |
-| 0.7 | `deploy.yml` + 開啟 GitHub Pages | ⬜ | 線上網址可開啟 | |
+| 0.6 | `.npmrc`（快取放專案內）+ Astro 骨架 + `npm install` | ⬜ | `npm run build` 成功；`~/.npm` 沒有新增檔案 | |
+| 0.7 | `deploy.yml` + 開啟 GitHub Pages | ⬜ | 線上網址打得開 | |
 
-## Phase 1 — MVP
+## Phase 1：MVP
 
 | # | 任務 | 狀態 | 驗證方式 | 驗證結果 |
 |---|---|---|---|---|
-| 1.1 | 設計系統：字型、藍綠配色、深色模式、自製 logo（不提 UWF） | ⬜ | 瀏覽器截圖 桌機/手機/深色 | |
-| 1.2 | 資料 schema（zod）+ 範例店家 | ⬜ | 故意放錯資料 → build 應失敗 | |
-| 1.3 | `scripts/fetch-osm` 產生種子資料 | ⬜ | 產出 ≥ 30 個 YAML，schema 全過 | |
-| 1.4 | 人工補資料：Wi-Fi / 插座 / 筆電政策（目標 25+ 間有完整資料） | ⬜ | 每筆有 source + last_verified | |
-| 1.5 | 首頁地圖（MapLibre + OpenFreeMap 自訂淡色樣式） | ⬜ | 所有店家標記正確顯示 | |
-| 1.6 | 店家清單 + 搜尋 | ⬜ | Playwright 測試 | |
-| 1.7 | 篩選器（Wi-Fi、插座、Open now、筆電友善、安靜、區域） | ⬜ | Playwright 測試各篩選 | |
-| 1.8 | 店家頁 `/shops/[slug]` + 新鮮度徽章 | ⬜ | 每間店頁面皆可開啟 | |
-| 1.9 | About / 資料方法 / FAQ / 免責聲明 | ⬜ | 內容檢查 | |
-| 1.10 | 回報表單（Google Form 或 Tally）串接 | ⬜ | 送出測試回報 | |
-| 1.11 | `ci.yml`：PR 時驗證 + build + 測試 | ⬜ | 開測試 PR 看 CI 綠燈 | |
-| 1.12 | Lighthouse ≥ 90（效能 / 無障礙 / SEO / 最佳實踐） | ⬜ | Lighthouse 報告 | |
+| 1.1 | 設計系統：字型、柔和藍綠配色、深色模式 | ⬜ | 截圖：桌機 / 手機 / 深色 | |
+| 1.2 | 自製 logo（SVG）+ favicon | ⬜ | 截圖確認 | |
+| 1.3 | 資料 schema（zod）+ 範例店家 | ⬜ | 故意放錯資料 → build 應該失敗 | |
+| 1.4 | `scripts/fetch-osm.ts` 產生種子資料 | ⬜ | 產出 ≥ 30 個 YAML，schema 全部通過 | |
+| 1.5 | FB 貼上更新流程（寫成 `docs/FB-UPDATE.md` 操作說明） | ⬜ | 用一則範例貼文實際跑一次 | |
+| 1.6 | 首頁地圖（MapLibre + OpenFreeMap 淡色樣式） | ⬜ | 所有店家標記位置正確 | |
+| 1.7 | 店家清單 + 搜尋 | ⬜ | Playwright 測試 | |
+| 1.8 | 篩選（Wi-Fi、插座、Open now、筆電友善、安靜、區域） | ⬜ | Playwright 測試每個篩選 | |
+| 1.9 | 店家頁 `/shops/[slug]` + 新鮮度徽章 | ⬜ | 每間店的頁面都打得開 | |
+| 1.10 | About / 資料方法 / FAQ / 免責聲明 | ⬜ | 內容檢查 | |
+| 1.11 | `ci.yml`：PR 時驗證 + build + 測試 | ⬜ | 開測試 PR，CI 綠燈 | |
+| 1.12 | Lighthouse ≥ 90 | ⬜ | Lighthouse 報告 | |
 | 1.13 | 上線 + 手機實測 | ⬜ | GitHub Pages 網址 | |
 
-## Phase 2 — 社群即時回報
+## Phase 1.5：網站留言（需要你先註冊 Supabase）
 
 | # | 任務 | 狀態 | 驗證方式 | 驗證結果 |
 |---|---|---|---|---|
-| 2.1 | Supabase 專案 + 資料表 + RLS 權限規則 | ⬜ | 匿名只能新增、不能改刪 | |
-| 2.2 | 一鍵回報（Wi-Fi works / Outlets available） | ⬜ | 回報後即時顯示 | |
-| 2.3 | 留言 + Cloudflare Turnstile 防機器人 | ⬜ | 無驗證無法送出 | |
-| 2.4 | 社群回報自動更新新鮮度 | ⬜ | 徽章隨回報改變 | |
-| 2.5 | 檢舉 / 隱藏垃圾留言 | ⬜ | 手動測試 | |
+| 1.5.1 | 你註冊 Supabase、建專案，把金鑰放進 `.env` | ⏸️ | — | |
+| 1.5.2 | `supabase/schema.sql`：reports 資料表 + RLS + 明確權限設定 | ⬜ | 匿名身分：能新增、不能讀、不能改、不能刪 | |
+| 1.5.3 | 店家頁留言區（快速按鈕 + 文字框）+ `/submit` 新增店家 | ⬜ | Playwright：送出成功並顯示感謝訊息 | |
+| 1.5.4 | 防垃圾：honeypot、字數限制、頻率限制 | ⬜ | 填了陷阱欄位的送出會被擋下 | |
+| 1.5.5 | `npm run reports` 審核腳本 | ⬜ | 拉出待審 → 套用 → 標記成 approved | |
+| 1.5.6 | `reports-check.yml`：每日保持運作 + 有新留言就開 Issue | ⬜ | 手動觸發一次 | |
 
-## Phase 3 — 加分功能
+## Phase 2：加分功能
 
 | # | 任務 | 狀態 | 驗證方式 | 驗證結果 |
 |---|---|---|---|---|
-| 3.1 | `refresh.yml` 每週：OSM 新店 PR、過期 Issue、壞連結檢查 | ⬜ | 手動觸發一次 | |
-| 3.2 | 指南頁（Study spots near UWF 等） | ⬜ | | |
-| 3.3 | PWA（加到主畫面、離線看清單） | ⬜ | Lighthouse PWA | |
-| 3.4 | 店家認領 / 店家自行更新 | ⬜ | | |
-| 3.5 | 自訂網域 | ⬜ | DNS + HTTPS | |
+| 2.1 | `refresh.yml` 每週：OSM 新店 PR、過期 Issue、壞連結 | ⬜ | 手動觸發一次 | |
+| 2.2 | 指南頁 | ⬜ | | |
+| 2.3 | PWA（加到主畫面、離線看清單） | ⬜ | Lighthouse | |
+| 2.4 | 自訂網域（選配） | ⬜ | DNS + HTTPS | |
+| 2.5 | 公開審核過的短評（選配） | ⬜ | | |
 
 ---
 
@@ -67,4 +68,5 @@
 | 日期 | 內容 |
 |---|---|
 | 2026-10-12 | 建立計畫書與進度表；實測 OSM 資料；確認本機已有 Node 24 / npm / git / gh |
-| 2026-10-12 | 確認決定：表單先行、自製 logo 不提 UWF、public repo、使用本機 Playwright |
+| 2026-10-12 | 第一輪決定：自製 logo、建立 public repo、使用本機 Playwright |
+| 2026-10-12 | 第二輪修訂：定名「850 Sip & Charge Map」；新增 FB 貼上更新流程；改成網站直接留言（Supabase 免費，不公開、審核制）取代 Google Form；配色降低飽和度；所有安裝都限定在專案資料夾，不需要 Python |

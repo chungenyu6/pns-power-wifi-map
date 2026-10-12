@@ -1,120 +1,178 @@
-# PNS Wi-Fi & Outlet Map — 專案計畫書
+# 850 Sip & Charge Map — 專案計畫書
 
-> 狀態：**規劃中（尚未開始實作）** · 最後更新：2026-10-12
-> 進度追蹤請看 [PROGRESS.md](PROGRESS.md)
+> 狀態：**規劃完成，等你說「go」開始實作** · 最後更新：2026-10-12
+> 進度追蹤：[PROGRESS.md](PROGRESS.md) · Repo：https://github.com/chungenyu6/pns-power-wifi-map
 
 ---
 
 ## 1. 一句話目標
 
-做一個給 **Pensacola 在地人**用的極簡地圖網站：快速找到「有 Wi-Fi、有插座、可以帶筆電坐久一點」的咖啡店，資訊由社群持續更新，並清楚標示「多久以前被確認過」。
+做一個給 **Pensacola（850 區碼）在地人**用的極簡地圖網站：快速找到「有 Wi-Fi、有插座、可以帶筆電坐久一點」的咖啡店。資料持續更新，每間店都會標出「多久以前被確認過」。
 
+- 網站名稱：**850 Sip & Charge Map**
 - 網站內容：**英文**（給在地人看）
 - 給你看的文件（README、docs/）：**繁體中文**
-- 範圍：先只做 Pensacola 一帶（見 §5）
+- 範圍：先只做 Pensacola 一帶（見 §8）
 
 參考網站 [Happy Toy Scout](https://happytoyscout.com/zh/collections/hello-kitty-friends-godzilla-2026) 值得借鏡的地方：
 
 | 它做的事 | 我們對應的做法 |
 |---|---|
-| 社群回報、不是官方庫存，並明講 | 每間店標「最後確認日期」+ 資料來源，並有「資料方法」頁 |
-| 資料快照更新時間 | 全站顯示「Data updated …」，每間店有新鮮度徽章 |
+| 社群回報、不是官方庫存，並且明講 | 每間店標「最後確認日期」+ 資料來源，另有「資料方法」頁 |
+| 顯示資料快照更新時間 | 全站顯示「Data updated …」，每間店有新鮮度徽章 |
 | 地圖是主角，一鍵打開 | 首頁就是地圖 + 清單 |
-| 卡片格狀清單 + 每個項目有自己的頁面 | 每間店一個頁面（也有利 Google 搜尋 "pensacola coffee wifi"） |
+| 每個項目有自己的頁面 | 每間店一頁（也有利於 Google 搜尋 "pensacola coffee wifi"） |
 | FAQ、免責聲明 | About / FAQ / 免責聲明（資料以現場為準） |
 
 ---
 
-## 2. ⚠️ 先講清楚：Facebook 社團 / IG 自動抓資料「不建議、而且大多做不到」
+## 2. 資料來源策略
 
-你想從 Pensacola FB 社團、咖啡店 IG/FB 粉專自動抓最新資訊。實際狀況：
+### 2.1 為什麼不寫程式自動抓 FB / IG
 
 | 來源 | 能不能自動抓？ | 原因 |
 |---|---|---|
-| FB 社團（例如 Pensacola 在地社團） | ❌ | Meta 已在 2024 年移除 Groups API；爬蟲違反 Meta 服務條款，且多為私人社團、牽涉成員個資 |
-| 咖啡店 IG | ❌（除非店家授權） | Instagram Graph API 只能讀「你自己管理」的商業帳號；Basic Display API 已於 2024 年底停用；爬蟲違反條款、常被封、很不穩 |
-| 咖啡店 FB 粉專 | ❌（實務上） | Page Public Content Access 需要 Meta 審核，個人專案幾乎不會通過 |
-| **OpenStreetMap（OSM）** | ✅ 免費、合法 | 開放資料。**我已實測**：Pensacola 範圍內 37 間咖啡店，其中 10 間已有 Wi-Fi 標記、20 間有營業時間 |
-| Google Places API | ⚠️ 可以但有成本 | 有營業時間等資料，但超過免費額度要付費，且條款限制不能長期快取資料 |
+| FB 社團 | ❌ | Meta 在 2024 年移除了 Groups API；爬蟲違反服務條款，而且大多是私人社團，牽涉成員個資 |
+| 咖啡店 IG | ❌（除非店家授權） | Graph API 只能讀「你自己管理」的商業帳號；Basic Display API 已在 2024 年底停用；爬蟲很容易被封 |
+| 咖啡店 FB 粉專 | ❌（實務上） | 公開內容 API 要 Meta 審核，個人專案幾乎不會通過 |
+| **OpenStreetMap（OSM）** | ✅ 免費、合法 | **已實測**：Pensacola 範圍內有 37 間咖啡店，10 間已標 Wi-Fi，20 間有營業時間 |
 
-### 建議改用「三層資料策略」（合法、可持續、而且一樣能拿到最新資訊）
+### 2.2 四個資料管道
 
-1. **種子資料（自動）**：用 OSM 抓出 Pensacola 所有咖啡店的名稱、位置、營業時間、官網、IG 連結 → 自動產生初始清單。
-2. **人工整理（半自動）**：你（或我協助）讀 FB 社團裡大家的分享，手動輸入成「社群回報」，**只記內容與日期，不記發文者姓名**。
-3. **社群回報（持續）**：網站上讓在地人一鍵回報「今天 Wi-Fi 能用 ✓ / 插座在靠窗位」。
-   → **把 FB 社團變成「宣傳管道」而不是「爬蟲目標」**：在社團發文請大家到網站回報，資料就會自己長大。
+| # | 管道 | 誰來做 | 用途 |
+|---|---|---|---|
+| A | **OSM 種子資料** | 腳本自動跑 | 一次產生所有咖啡店的名稱、位置、營業時間、官網 / IG 連結 |
+| B | **⭐ FB 貼上更新（初期主力）** | 你貼、我整理 | 你在 FB 社團看到消息 → 貼給我 → 我更新網站（見 §2.3） |
+| C | **網站上直接留言回報** | 在地人 | 每間店頁面有留言框，**不公開**，由我們審核後採用（見 §4） |
+| D | 店家連結 | 使用者自己點 | 店家頁放 IG / FB 連結，想看最新貼文可以直接點過去 |
 
-> 加碼：店家頁面放 IG / FB 連結，讓使用者自己點過去看最新貼文；之後可以加「店家認領」功能讓老闆自己更新。
+> 等網站上線，可以在 FB 社團發文宣傳，請大家直接到網站回報。社團就從「資料來源」變成「宣傳管道」。
+
+### 2.3 FB 貼上更新流程（管道 B）
+
+社群還沒起來之前，這是最快的更新方式：
+
+```
+你在 FB 看到貼文
+   ↓ 複製文字（或截圖）貼給 Claude，可以加一句「這是 OO 社團，今天的貼文」
+Claude：
+   1. 判斷是哪間店、提到哪些事（Wi-Fi、插座、筆電政策、營業時間異動…）
+   2. 更新該店的 YAML：用自己的話摘要，加上 source（facebook-group、日期）
+      ※ 不記錄發文者姓名，不整段複製原文
+   3. 有疑問的地方（例如店名對不上）先問你
+   4. 跑驗證 → commit → push
+   ↓
+GitHub Actions 自動部署，大約 1–2 分鐘後上線
+```
+
+- 一次貼好幾則也可以，我會整理成一個 commit。
+- repo 已經在 GitHub 上，之後你也可以在**手機 Claude App 的雲端 session** 直接貼，不用開電腦。
 
 ---
 
-## 3. 推薦技術架構（最好、也最簡單的做法）
+## 3. 技術架構
 
 ```
-┌────────────────────────────── GitHub repo ──────────────────────────────┐
-│  data/shops/*.yaml   ← 每間店一個檔案（人可以直接讀、直接改）              │
-│  src/                ← Astro 網站程式碼                                   │
-│  scripts/            ← 抓 OSM、檢查資料新鮮度的腳本                         │
-│  .github/workflows/  ← GitHub Actions                                    │
-└─────────────────────────────────────────────────────────────────────────┘
-        │ push                         │ 每週排程
-        ▼                              ▼
-  [Action: build + deploy]      [Action: 抓 OSM 新店 / 標記過期資料 / 檢查壞連結]
-        │                              │
-        ▼                              ▼
-  GitHub Pages（靜態網站）       自動開 PR / Issue 給你審核
-        ▲
-        │ 瀏覽器直接呼叫（Phase 2）
-  Supabase（免費方案）：存社群即時回報、留言
+┌──────────────────────────── GitHub repo ────────────────────────────┐
+│  data/shops/*.yaml  ← 每間店一個檔案（人可以直接讀、直接改）           │
+│  src/               ← Astro 網站程式碼                                │
+│  scripts/           ← 抓 OSM、拉取留言、檢查資料新鮮度（TypeScript）    │
+│  supabase/          ← 資料表與權限規則（SQL 檔）                       │
+│  .github/workflows/ ← GitHub Actions                                 │
+└─────────────────────────────────────────────────────────────────────┘
+      │ push                                  │ 排程
+      ▼                                       ▼
+ [deploy：驗證 → build → 部署]          [每天：檢查有沒有新留言 → 開 Issue 通知你]
+      │                                 [每週：OSM 新店、過期資料、壞連結]
+      ▼
+ GitHub Pages（靜態網站）
+      │ 使用者送出留言（只能新增，不能讀）
+      ▼
+ Supabase 免費方案（存待審核的留言）
+      ▲
+      │ 審核：npm run reports（只在你的電腦上跑，金鑰放 .env，不進 git）
 ```
 
 | 元件 | 選擇 | 為什麼 |
 |---|---|---|
-| 網站框架 | **Astro** | 產出純靜態 HTML，速度快、預設幾乎零 JavaScript；內建資料 schema 驗證；每間店自動生成一頁 |
-| 地圖 | **MapLibre GL JS + OpenFreeMap 圖磚** | 完全免費、不用 API key；向量地圖可以自訂顏色，做出極簡、配合 UWF 藍綠的地圖風格 |
-| 資料儲存 | **repo 裡的 YAML 檔** | 不用資料庫；改資料 = 改檔案 = 有版本紀錄；未來雲端 Claude 也能直接改 |
-| 部署 | **GitHub Actions → GitHub Pages** | 你原本就習慣，免費、穩定。👍 我同意這個選擇 |
-| 社群回報 / 留言 | Phase 1：表單（Tally 或 Google Form）<br>Phase 2：Supabase | 見下方比較 |
-
-### 關於你用 GitHub Actions 部署靜態網站
-很適合這個專案。只有一點要注意：**免費 GitHub 帳號的 Pages 需要 repo 是 public**（private repo 要 GitHub Pro）。這個專案資料本來就是公開的，所以 public 沒問題，只要不要把任何金鑰 commit 進去（Supabase 的 anon key 本來就設計成可公開，安全靠資料庫權限規則）。
-
-### 社群回報方案比較
-
-| 方案 | 在地人要註冊嗎？ | 即時顯示？ | 你要做什麼 | 評價 |
-|---|---|---|---|---|
-| Giscus（GitHub Discussions 留言） | 要 GitHub 帳號 ❌ | ✅ | 幾乎不用 | 在地人不會有 GitHub，**不推** |
-| Tally / Google Form | 不用 ✅ | ❌（審核後才上） | 定期看回覆、更新資料 | **MVP 最簡單** |
-| Supabase + 防機器人驗證（Cloudflare Turnstile） | 不用 ✅ | ✅ | 註冊 Supabase（免費）、偶爾刪垃圾 | **最像 Happy Toy Scout 的體驗**，Phase 2 |
+| 網站框架 | **Astro** | 產出純靜態 HTML，速度快；內建資料 schema 驗證；每間店自動生成一頁 |
+| 地圖 | **MapLibre GL JS + OpenFreeMap 圖磚** | 完全免費、不用 API key；可以自訂成淡色極簡風 |
+| 店家資料 | **repo 裡的 YAML** | 不需要資料庫；改資料就是改檔案，有版本紀錄 |
+| 留言 | **Supabase（免費方案）** | 見 §4 |
+| 腳本 | **Node + TypeScript（tsx）** | 跟網站同一套工具，**不需要 Python** |
+| 部署 | **GitHub Actions → GitHub Pages** | 你原本就習慣用，免費又穩定 👍 |
 
 ---
 
-## 4. 網站功能規劃
+## 4. 網站直接留言（不公開、審核制）
+
+### 4.1 使用者看到的樣子
+每間店頁面下方有一個區塊「**Been here recently?**」：
+- 快速按鈕：Wi-Fi worked ✓ / didn't ✗ · Outlets: plenty / a few / none
+- 一個文字框（選填）："Anything else? e.g. outlets by the window, no laptops on weekends"
+- 送出後顯示："Thanks! We'll review it and update the map."
+- **不用註冊、不用登入、不用離開網站**（比 Google Form 方便很多）
+
+另外有 `/submit` 頁可以「新增一間店」。
+
+### 4.2 為什麼需要 Supabase？要付錢嗎？
+GitHub Pages 是**純靜態網站**，沒辦法自己接收和儲存使用者送出的內容，所以留言需要一個能存資料的後端。Supabase 就是那個「幫你存留言的資料庫」。
+
+**不用付錢：**
+
+| 項目 | 費用 |
+|---|---|
+| Supabase 免費方案（500 MB 資料庫，存幾十萬則留言都沒問題） | **$0** |
+| GitHub Pages / Actions（public repo） | **$0** |
+| OpenFreeMap 地圖、Google Fonts | **$0** |
+| 自訂網域（選配，例如 `850sipcharge.com`） | 約 US$12/年，不買也可以 |
+
+**免費方案要注意的兩件事（都會處理）：**
+1. **專案閒置 7 天會被暫停** → 加一個 GitHub Action，每天自動戳一下資料庫，讓它保持運作。
+2. **Supabase 從 2026-10-30 起改了資料表 API 的預設開放方式** → 我們的 SQL 會明確寫好權限設定，不受影響。
+3. 註冊時是否要信用卡，各方說法不一，**請你註冊時確認**；免費方案本身不會收費。帳號要你自己註冊（我不能代你建帳號）。
+
+### 4.3 安全與防垃圾
+- 資料庫權限規則（RLS）：匿名訪客**只能新增**留言，**不能讀、不能改、不能刪**。所以就算有人看網頁原始碼，也拿不到別人的留言。
+- 網頁裡的 Supabase 公開金鑰（anon key）本來就設計成可以公開；真正的管理金鑰只放在你電腦的 `.env`，不會進 git。
+- 防垃圾：隱藏陷阱欄位（honeypot）+ 字數限制 + 同一來源的頻率限制。如果垃圾真的變多，再加 Cloudflare Turnstile（免費的機器人驗證）。
+
+### 4.4 審核流程
+```
+每天 GitHub Action 檢查新留言 → 有新留言就開一個 Issue → GitHub 寄 email 通知你
+你跟 Claude 說「看一下新留言」
+Claude 跑 npm run reports：
+   列出待審留言 → 合理的就摘要寫進店家 YAML（source: site-report）
+   → 把留言標成 approved / rejected → commit → push → 自動上線
+```
+之後如果你想要，也可以讓「審核通過的短評」公開顯示在店家頁（Phase 3，可選）。
+
+---
+
+## 5. 網站功能
 
 ### 頁面
 
 | 頁面 | 內容 |
 |---|---|
-| `/` 首頁地圖 | 全螢幕地圖 + 側邊（手機版是下方抽屜）店家清單；篩選器；搜尋 |
-| `/shops/[slug]` 店家頁 | Wi-Fi、插座、座位、吵鬧程度、筆電友善政策、營業時間、IG/FB/官網連結、新鮮度、近期社群回報、「Report an update」按鈕 |
-| `/submit` | 新增店家 / 回報更新 |
+| `/` 首頁地圖 | 地圖 + 店家清單（桌機在側邊，手機是下方可拉起的抽屜）、篩選、搜尋 |
+| `/shops/[slug]` 店家頁 | Wi-Fi、插座、座位、吵鬧程度、筆電政策、營業時間、IG/FB/官網、新鮮度、留言框 |
+| `/submit` | 新增一間店 |
 | `/about` | 資料方法（資料從哪來、多久更新）、FAQ、免責聲明 |
-| `/guides`（Phase 3） | 例如 "Best study spots near UWF"、"Late-night spots"、"Quiet places downtown" |
+| `/guides`（Phase 3） | 例如 "Late-night study spots"、"Quiet places downtown" |
 
-### 篩選器
-- Wi-Fi：有 / 免密碼
-- 插座：很多 / 有一些
-- **Open now**（依營業時間計算）
-- 筆電友善（有些店週末禁筆電）
-- 安靜
-- 區域：Downtown、East Hill、UWF/University、Cordova、Perdido、Pensacola Beach…
+### 篩選
+Wi-Fi（有 / 免密碼）· 插座（很多 / 有一些）· **Open now** · 筆電友善 · 安靜 · 區域（Downtown、East Hill、University area、Cordova、Perdido、Pensacola Beach…）
 
-### 新鮮度徽章（核心！解決「資訊是否最新」）
-- 🟢 **Verified** — 30 天內有人確認
-- 🟡 **Getting old** — 30–90 天
-- ⚪ **Unverified** — 超過 90 天或從未確認
+### 新鮮度徽章
+- 🟢 **Verified**：30 天內有人確認
+- 🟡 **Getting old**：30–90 天
+- ⚪ **Unverified**：超過 90 天，或從來沒人確認過
 
-### 每間店的資料格式（草案）
+---
+
+## 6. 資料格式（草案）
+
 ```yaml
 name: Bodacious Brew
 slug: bodacious-brew
@@ -122,126 +180,131 @@ area: downtown
 location: { lat: 30.41, lng: -87.21, address: "..." }
 wifi:
   available: yes          # yes | no | unknown
-  password: on-receipt    # none | ask-staff | on-receipt | posted — 不公開實際密碼
-  speed: good             # optional
+  password: on-receipt    # none | ask-staff | on-receipt | posted（不公開實際密碼）
 power:
   outlets: some           # none | few | some | many | unknown
   notes: "Along the window bar"
 laptop_policy: "No laptops on weekends after 10am"
-noise: moderate
-hours: "Mo-Fr 07:00-17:00; Sa-Su 08:00-15:00"   # OSM 格式，方便算 Open now
+noise: moderate           # quiet | moderate | loud | unknown
+hours: "Mo-Fr 07:00-17:00; Sa-Su 08:00-15:00"   # OSM 格式，用來算 Open now
 links: { website: "...", instagram: "...", facebook: "..." }
 last_verified: 2026-10-01
 sources:
   - { type: osm, date: 2026-10-12 }
-  - { type: community, date: 2026-09-28, note: "Local FB group post" }
+  - { type: facebook-group, date: 2026-09-28, note: "Local group post about outlets" }
+  - { type: site-report, date: 2026-10-05 }
 ```
-> **不公開 Wi-Fi 密碼**：避免店家反感，只標「免密碼 / 問店員 / 印在收據上」。
+
+- **不公開 Wi-Fi 密碼**，只標「免密碼 / 問店員 / 印在收據上 / 店內有貼」，避免店家反感。
+- 格式錯誤 → build 直接失敗，壞資料不會上線。
 
 ---
 
-## 5. 範圍（Phase 1）
+## 7. 視覺設計
 
-Pensacola 市區 + 周邊：Downtown、East Hill、North Hill、Cordova Mall 一帶、UWF 周邊、Perdido Key、Pensacola Beach、Gulf Breeze。
-（地圖範圍約 北緯 30.33–30.55、西經 87.10–87.35，之後要擴大到 Navarre / Milton 很容易。）
-
----
-
-## 6. 視覺設計
-
-**方向：Claude/Anthropic 那種溫暖、留白多、像紙張的極簡感 + UWF 藍綠配色。**
+**方向：Claude/Anthropic 那種溫暖、留白多、像紙張的極簡感，搭配柔和的藍綠色。**
 
 ### 字型
-Claude 官方用的字型是**商業授權字型**，不能直接用。改用外觀很接近的免費 Google Fonts：
-- 標題：**Source Serif 4**（優雅襯線體，接近 Claude 的標題氣質）
-- 內文 / 介面：**Inter**（乾淨易讀）
+Claude 官方字型要商業授權，所以改用外觀接近的免費 Google Fonts：
+- 標題：**Source Serif 4**（優雅的襯線體）
+- 內文 / 介面：**Inter**（乾淨好讀）
 
-### 配色（UWF 官方品牌色，來源：[UWF Brand – Color](https://uwf.edu/brand/color/)）
+### 配色（以 UWF 藍綠為靈感，降低飽和度，比較耐看）
+你說原本的官方色太飽和，所以我調成偏灰、柔和的版本。每個顏色都算過對比度，確保好讀：
 
-| 用途 | 顏色 | Hex |
-|---|---|---|
-| 主色（標題、按鈕、地圖標記） | Argo Navy | `#00205B` |
-| 正向狀態（有 Wi-Fi / 插座、Verified） | Argo Green | `#00A346` |
-| 連結 | Heritage Blue | `#005EA6` |
-| 綠色文字（對比度較好） | Cannon Green | `#007A33` |
-| 背景 | 暖象牙白（Claude 風） | `#F7F6F1` |
-| 主要文字 | 近黑 | `#1F1E1D` |
+| 用途 | 淺色模式 | 對比度* | 深色模式 | 對比度* |
+|---|---|---|---|---|
+| 背景 | 暖象牙白 `#F7F5EF` | — | 深墨藍 `#14181F` | — |
+| 主要文字 | `#1F1E1D` | 15.3 | `#ECE9E2` | 14.7 |
+| 次要文字 | `#6B6862` | 5.1 | `#A39F97` | 6.8 |
+| 主色（標題、按鈕） | 柔和海軍藍 `#1F3A5F` | 10.5 | — | — |
+| 連結 | 灰藍 `#3A6A96` | 5.2 | `#8FB3D9` | 8.2 |
+| 正向狀態文字（Verified、有 Wi-Fi） | 森林綠 `#2F7D5B` | 4.6 | `#7CC49C` | 8.7 |
+| 地圖標記 / 色塊（非文字） | 鼠尾草綠 `#5BA37E` | — | `#7CC49C` | — |
 
-- 支援深色模式（深藍底）
-- 手機優先設計（大部分人會在路上用手機查）
-- 地圖本身用淡色、低彩度，讓藍綠標記跳出來
+\* 對文字的背景對比度；無障礙標準 WCAG AA 要求 ≥ 4.5，以上全部通過。實作時我會看實際畫面再微調。
 
-### Logo（已決定）
-**自製極簡 logo**：咖啡杯 + Wi-Fi 波紋 + 插頭，用 Argo Navy / Green 配色。
-網站上**不提 UWF**，只是配色採用這組藍綠（顏色本身不是商標）。
+- 地圖底圖用淡色、低彩度，讓藍綠色標記跳出來
+- 手機優先（大部分人會在路上用手機查）
+- 支援深色模式
+
+### Logo
+**自製極簡 logo**：咖啡杯 + 閃電 / 插頭的意象，可以搭配「850」，用上面的藍綠配色。網站上**不提 UWF**。
 
 ---
 
-## 7. 自動化（GitHub Actions）
+## 8. 範圍（Phase 1）
+
+Pensacola 市區與周邊：Downtown、East Hill、North Hill、Cordova Mall 一帶、University area、Perdido Key、Pensacola Beach、Gulf Breeze。
+（地圖範圍大約北緯 30.33–30.55、西經 87.10–87.35；之後要擴大到 Navarre、Milton 很容易。）
+
+---
+
+## 9. 安裝原則：所有東西都裝在專案資料夾裡
+
+你的電腦已經有：Node.js v24.4.1、npm 11.4.2、git、gh（已登入）、Python 3.11 ✅
+**不會安裝任何全域工具。**
+
+| 東西 | 裝在哪 | 說明 |
+|---|---|---|
+| npm 套件（Astro、MapLibre、Supabase client、tsx…） | `./node_modules/` | npm 預設就是裝在專案裡 |
+| npm 下載快取 | `./.npm-cache/` | npm 預設會把快取放在 `~/.npm`，我會用專案的 `.npmrc` 把它改到專案資料夾裡 |
+| Playwright 測試瀏覽器 | 優先**直接用你電腦上已有的**（`~/Library/Caches/ms-playwright`，只讀取、不新增）；版本不合的話，下載到 `./.playwright-browsers/`（**會先問你**） | |
+| Supabase | **不裝 CLI**，SQL 檔放在 `supabase/`，在 Supabase 網頁後台執行 | |
+| Python | **不需要**：腳本都用 Node/TypeScript | 以後真的要用 Python，就用內建的 `python3 -m venv .venv`（不用另外裝 uv，因為裝 uv 本身就是全域安裝） |
+| 秘密金鑰 | `./.env`（已在 `.gitignore`） | 只有 Supabase 管理金鑰，**永遠不 commit** |
+
+以上這些資料夾都會加進 `.gitignore`。要刪掉整個專案，直接刪資料夾就乾淨了。
+
+---
+
+## 10. 自動化（GitHub Actions）
 
 | Workflow | 觸發 | 做什麼 |
 |---|---|---|
-| `deploy.yml` | push 到 main | 驗證資料格式 → build → 部署到 GitHub Pages |
-| `ci.yml` | 開 PR | 資料 schema 驗證、build、自動測試 |
-| `refresh.yml` | 每週一次 | 抓 OSM 找新開的咖啡店 → 自動開 PR；標記超過 90 天未確認的店 → 開 Issue；檢查官網 / IG 連結是否失效 |
+| `deploy.yml` | push 到 main | 驗證資料 → build → 部署到 GitHub Pages |
+| `ci.yml` | 開 PR | 驗證資料、build、Playwright 測試 |
+| `reports-check.yml` | 每天 | 戳一下 Supabase（避免被暫停）＋ 有新留言就開 / 更新 Issue 通知你 |
+| `refresh.yml` | 每週 | OSM 新開的店 → 自動開 PR；超過 90 天沒確認的店 → 開 Issue；檢查壞掉的連結 |
 
 ---
 
-## 8. 驗證方式（怎麼確認做出來的東西是對的）
+## 11. 驗證方式
 
-每個階段完成都要通過：
-1. **資料驗證**：Astro content schema（zod）— 格式錯就 build 失敗
-2. **Build 成功**：`npm run build` 無錯誤
-3. **自動化測試**：Playwright 煙霧測試（首頁能載入、地圖有標記、篩選器有效、店家頁能開）
-4. **瀏覽器實測**：我用內建瀏覽器打開，檢查桌機 + 手機寬度、深色模式
-5. **Lighthouse**：效能 / 無障礙 / SEO 都 ≥ 90
-6. **上線檢查**：GitHub Pages 網址實際打開確認
+每個任務完成都要通過對應的檢查，結果記在 [PROGRESS.md](PROGRESS.md)：
 
-所有項目會在 [PROGRESS.md](PROGRESS.md) 打勾並記錄驗證結果。
-
----
-
-## 9. 需要安裝 / 註冊的東西（會先問你）
-
-你的電腦目前已有：Node.js v24.4.1、npm 11.4.2、git 2.50、gh CLI（已登入 `chungenyu6`）、Python 3.11 ✅
-
-| 項目 | 何時需要 | 說明 |
-|---|---|---|
-| Astro、MapLibre 等 npm 套件 | Phase 1 開始 | `npm install`，只裝在專案資料夾 `node_modules/`，不影響系統 |
-| `@playwright/test` npm 套件 | Phase 1 驗證 | 你機器上已有 Playwright 的 Chromium（`~/Library/Caches/ms-playwright/chromium-1234`），只需在專案裡裝 npm 套件（很小）；若版本不符需要重新下載瀏覽器，會先問你 |
-| Tally 或 Google Form | Phase 1 | 你建表單（Google Form 用你的 Gmail 就好） |
-| Supabase 帳號 | Phase 2 | 免費方案；你自己註冊，我不能代你建帳號 |
-| 網域（可選） | 任何時候 | 例如 `pnswifi.com` 約 US$12/年；不買也可以用 `chungenyu6.github.io/pns-power-wifi-map` |
-
-**不需要安裝任何全域工具。**
+1. **資料驗證**：Astro content schema（zod），格式錯就 build 失敗
+2. **Build**：`npm run build` 沒有錯誤
+3. **自動化測試**：Playwright（首頁載入、地圖有標記、篩選有效、店家頁能開、留言能送出）
+4. **瀏覽器實測**：我用內建瀏覽器看桌機、手機寬度、深色模式，並截圖
+5. **Lighthouse**：效能、無障礙、SEO、最佳實踐都 ≥ 90
+6. **安全**：用匿名身分實際測試「讀不到留言、改不了資料」
+7. **上線確認**：實際打開 GitHub Pages 網址檢查
 
 ---
 
-## 10. 分階段路線圖
+## 12. 路線圖
 
 | 階段 | 內容 | 產出 |
 |---|---|---|
-| **Phase 0 — 準備** | git、GitHub remote repo、Astro 骨架、Pages 部署流程打通 | 一個能上線的空白網站 |
-| **Phase 1 — MVP** | OSM 種子資料 + 人工補資料（目標 25+ 間）、地圖、清單、篩選、店家頁、About、表單回報 | 可以分享到 FB 社團的第一版 |
-| **Phase 2 — 社群即時回報** | Supabase：一鍵「Wi-Fi works today ✓」、留言、防垃圾、即時新鮮度 | 資料自己長大 |
-| **Phase 3 — 加分功能** | 指南頁、PWA（加到手機主畫面）、店家認領、每週自動 refresh、自訂網域 | 更完整的在地工具 |
+| **Phase 0：準備** | ✅ 規劃、git、GitHub repo；Astro 骨架、`.npmrc`、Pages 部署 | 一個能上線的空白網站 |
+| **Phase 1：MVP** | 設計系統與 logo、OSM 種子資料、FB 貼上流程、地圖、清單、篩選、店家頁、About | 可以分享到 FB 社團的第一版 |
+| **Phase 1.5：留言** | Supabase 留言（不公開）、審核腳本、每日通知 | 在地人可以直接回報 |
+| **Phase 2：加分功能** | 每週自動 refresh、指南頁、PWA（加到手機主畫面）、自訂網域、（選配）公開審核過的短評 | 更完整的在地工具 |
+
+> Phase 1.5 需要你先註冊 Supabase；在那之前 Phase 0、1 都可以先做，不會卡住。
 
 ---
 
-## 11. 未來搬到雲端
-
-只要 repo 推上 GitHub，之後就可以：
-- 在 claude.ai/code 開雲端 session 直接接著做
-- 用排程雲端 agent 每週自動整理社群回報、更新資料
-
----
-
-## 12. 決定事項
+## 13. 決定事項
 
 | # | 問題 | 決定 |
 |---|---|---|
-| 1 | 網站名稱 | ⏸️ 待定（候選：**Sip & Plug PNS**、**PNS Work Spots**、**Outlet & Espresso**）— 先用 repo 名稱 `pns-power-wifi-map` |
-| 2 | 社群回報 | ✅ 先用表單（Google Form / Tally），Phase 2 再加 Supabase |
-| 3 | Logo | ✅ 自製極簡 logo，網站不提 UWF |
-| 4 | GitHub repo | ✅ 建立 public repo `chungenyu6/pns-power-wifi-map` |
-| 5 | 自動化測試 | ✅ 用本機已有的 Playwright；需要額外安裝時再通知你 |
+| 1 | 網站名稱 | ✅ **850 Sip & Charge Map** |
+| 2 | 初期資料更新 | ✅ 你在 FB 看到消息就貼給 Claude（§2.3） |
+| 3 | 社群回報 | ✅ 網站直接留言、不公開、審核制，用 Supabase 免費方案（§4） |
+| 4 | Logo | ✅ 自製極簡 logo，網站上不提 UWF |
+| 5 | 配色 | ✅ 參考 UWF 藍綠但降低飽和度，由 Claude 決定（§7） |
+| 6 | GitHub repo | ✅ public repo `chungenyu6/pns-power-wifi-map`（已建立） |
+| 7 | 安裝原則 | ✅ 全部裝在專案資料夾，不需要 Python（§9） |
+| 8 | 自動化測試 | ✅ 優先用你電腦上已有的 Playwright 瀏覽器 |
