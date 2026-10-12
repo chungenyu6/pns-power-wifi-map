@@ -1,0 +1,16 @@
+# Seeded from OpenStreetMap node/13453436201
+name: The Leisure Club Coffee and Brunch Bar
+area: midtown
+address: 1151 Office Woods Drive, Pensacola, FL 32504
+lat: 30.47247
+lng: -87.201515
+wifi:
+  available: yes
+  password: unknown
+hours: Mo-Sa 07:00-15:00
+links:
+  facebook: https://www.facebook.com/theleisureclub
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/node/13453436201

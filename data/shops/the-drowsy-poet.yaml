@@ -1,0 +1,22 @@
+# Seeded from OpenStreetMap way/250490043
+name: The Drowsy Poet
+area: midtown
+address: 86 Brent Ln, Pensacola, FL 32503
+lat: 30.468578
+lng: -87.238746
+wifi:
+  available: yes
+  password: unknown
+hours: Mo-Fr 06:00-21:00;Sa 07:00-21:00;Su 08:00-14:00
+links:
+  website: http://drowsypoetcoffee.com/
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/way/250490043
+  - type: web
+    date: 2026-10-12
+    note: 'Visit Pensacola: "plenty of seating to read a book, study"'
+    url: https://www.visitpensacola.com/blog/the-complete-guide-to-coffee-shops-in-pensacola/
+summary: The original Drowsy Poet on Brent Lane, with plenty of seating to read or study.
+laptop_friendly: yes

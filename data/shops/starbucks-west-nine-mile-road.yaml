@@ -1,0 +1,21 @@
+# Seeded from OpenStreetMap node/4732543134
+name: Starbucks
+chain: true
+area: northwest
+address: 2200 West Nine Mile Road, Pensacola, FL 32534
+lat: 30.534811
+lng: -87.313554
+hours: Sa-Th 05:30-20:00; Fr 05:00-20:00
+links:
+  website: https://www.starbucks.com/store-locator/store/10754/nine-mile-pine-forest-2200-w-nine-mile-rd-unit-b-pensacola-fl-325349415-
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/node/4732543134
+  - type: official-site
+    date: 2026-10-12
+    note: Starbucks offers free Wi-Fi in its stores
+    url: https://www.starbucks.com/
+wifi:
+  available: yes
+  password: none

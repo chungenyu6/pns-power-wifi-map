@@ -1,0 +1,318 @@
+---
+import Base from '../../layouts/Base.astro';
+import Amenities from '../../components/Amenities.astro';
+import FreshBadge from '../../components/FreshBadge.astro';
+import Icon from '../../components/Icon.astro';
+import { getShops, toView, type Shop } from '../../lib/shops';
+import { AREAS, NOISE, OUTLETS, SOURCE_TYPES, WIFI_PASSWORD } from '../../lib/meta';
+import { formatWeek, parseHours } from '../../lib/hours';
+
+export async function getStaticPaths() {
+  const shops = await getShops();
+  return shops.map((shop) => ({ params: { slug: shop.id }, props: { shop } }));
+}
+
+const { shop } = Astro.props as { shop: Shop };
+const d = shop.data;
+const view = toView(shop);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const hours = d.hours ? formatWeek(parseHours(d.hours)) : null;
+const directions = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${d.name}, ${d.address}`)}`;
+const fmtDate = (date: Date) =>
+  date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+
+const rows = [
+  {
+    icon: 'wifi' as const,
+    label: 'Wi-Fi',
+    value: d.wifi.available === 'yes' ? 'Yes' : d.wifi.available === 'no' ? 'No' : 'Not confirmed yet',
+    extra: [d.wifi.available === 'yes' && d.wifi.password !== 'unknown' ? WIFI_PASSWORD[d.wifi.password] : null, d.wifi.notes]
+      .filter(Boolean)
+      .join(' · '),
+  },
+  {
+    icon: 'plug' as const,
+    label: 'Outlets',
+    value: d.power.outlets === 'unknown' ? 'Not confirmed yet' : OUTLETS[d.power.outlets],
+    extra: d.power.notes ?? '',
+  },
+  {
+    icon: 'laptop' as const,
+    label: 'Laptops',
+    value: d.laptop_friendly === 'yes' ? 'Welcome' : d.laptop_friendly === 'no' ? 'Not encouraged' : 'Not confirmed yet',
+    extra: d.laptop_policy ?? '',
+  },
+  {
+    icon: 'volume' as const,
+    label: 'Noise',
+    value: d.noise === 'unknown' ? 'Not confirmed yet' : NOISE[d.noise],
+    extra: '',
+  },
+];
+---
+
+<Base title={d.name} description={`Wi-Fi, outlets and laptop info for ${d.name} in ${AREAS[d.area]}, Pensacola.`}>
+  <article class="container">
+    <a class="back" href={`${base}/`}><Icon name="arrow-left" /> All shops</a>
+
+    <header class="head">
+      <p class="eyebrow">{AREAS[d.area]}</p>
+      <h1>{d.name}</h1>
+      {d.summary && <p class="summary">{d.summary}</p>}
+      <div class="head-meta">
+        <Amenities shop={view} />
+      </div>
+    </header>
+
+    <section class="facts" aria-labelledby="facts-h">
+      <div class="section-head">
+        <h2 id="facts-h">Work-friendliness</h2>
+        <FreshBadge freshness={view.freshness} verified={d.last_verified} />
+      </div>
+      <dl>
+        {
+          rows.map((r) => (
+            <div class:list={['row', { unknown: r.value === 'Not confirmed yet' }]}>
+              <dt>
+                <Icon name={r.icon} size={18} />
+                {r.label}
+              </dt>
+              <dd>
+                {r.value}
+                {r.extra && <span class="extra">{r.extra}</span>}
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    </section>
+
+    <div class="two-col">
+      <section aria-labelledby="hours-h">
+        <h2 id="hours-h">Hours</h2>
+        {
+          hours ? (
+            <table class="hours">
+              <tbody>
+                {hours.map((h) => (
+                  <tr>
+                    <th scope="row">{h.days}</th>
+                    <td>{h.hours}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p class="muted">Hours not listed yet.</p>
+          )
+        }
+        <p class="note muted">Central Time. Hours change, especially on holidays.</p>
+      </section>
+
+      <section aria-labelledby="where-h">
+        <h2 id="where-h">Where</h2>
+        <p>{d.address}</p>
+        <p class="links">
+          <a href={directions} rel="noopener" target="_blank">Directions <Icon name="external" size={13} /></a>
+          {d.links.website && <a href={d.links.website} rel="noopener" target="_blank">Website <Icon name="external" size={13} /></a>}
+          {d.links.instagram && <a href={d.links.instagram} rel="noopener" target="_blank">Instagram <Icon name="external" size={13} /></a>}
+          {d.links.facebook && <a href={d.links.facebook} rel="noopener" target="_blank">Facebook <Icon name="external" size={13} /></a>}
+        </p>
+      </section>
+    </div>
+
+    <section class="report" aria-labelledby="report-h">
+      <h2 id="report-h">Been here recently?</h2>
+      <p class="muted">
+        Tell us if the Wi-Fi worked, where the outlets are, or if anything changed. A quick report form is coming soon.
+        Until then, mention <strong>850 Sip &amp; Charge</strong> in a local Pensacola Facebook group and we will pick it up.
+      </p>
+    </section>
+
+    <section class="sources" aria-labelledby="sources-h">
+      <h2 id="sources-h">Where this info comes from</h2>
+      <ul>
+        {
+          d.sources.map((s) => (
+            <li>
+              <span class="src-type">{SOURCE_TYPES[s.type]}</span>
+              {s.note && <span> · {s.note}</span>}
+              <span class="muted"> · {fmtDate(s.date)}</span>
+              {s.url && (
+                <>
+                  {' '}
+                  <a href={s.url} rel="noopener nofollow" target="_blank">
+                    link
+                  </a>
+                </>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .back:hover {
+    color: var(--text);
+  }
+
+  .head {
+    margin: 28px 0 36px;
+  }
+
+  .eyebrow {
+    margin: 0 0 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--green);
+  }
+
+  .summary {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 60ch;
+  }
+
+  section {
+    margin-bottom: 36px;
+  }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .facts dl {
+    margin: 8px 0 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    overflow: hidden;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .row + .row {
+    border-top: 1px solid var(--border);
+  }
+
+  dt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 550;
+  }
+
+  .row.unknown dd {
+    color: var(--muted);
+    font-weight: 400;
+    font-style: italic;
+  }
+
+  .extra {
+    display: block;
+    font-weight: 400;
+    font-style: normal;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+
+  .hours {
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+
+  .hours th {
+    text-align: left;
+    font-weight: 500;
+    color: var(--muted);
+    padding: 3px 20px 3px 0;
+  }
+
+  .note {
+    font-size: 0.8rem;
+    margin-top: 8px;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+  }
+
+  .links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .report {
+    padding: 20px;
+    border-radius: var(--radius);
+    background: var(--surface-2);
+  }
+
+  .report p {
+    margin: 0;
+  }
+
+  .sources ul {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 0.875rem;
+  }
+
+  .sources li {
+    margin-bottom: 4px;
+  }
+
+  .src-type {
+    font-weight: 550;
+  }
+
+  @media (max-width: 600px) {
+    .two-col {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+
+    .row {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+  }
+</style>

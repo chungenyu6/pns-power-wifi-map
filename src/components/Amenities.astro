@@ -1,0 +1,41 @@
+---
+import Icon from './Icon.astro';
+import type { ShopView } from '../lib/shops';
+
+interface Props {
+  shop: ShopView;
+}
+const { shop } = Astro.props;
+
+const wifi =
+  shop.wifi === 'yes'
+    ? { cls: 'good', text: shop.wifiFree ? 'Free Wi-Fi' : 'Wi-Fi' }
+    : shop.wifi === 'no'
+      ? { cls: 'bad', text: 'Wi-Fi' }
+      : { cls: '', text: 'Wi-Fi ?' };
+
+const outletText = { many: 'Plenty of outlets', some: 'Outlets', few: 'Few outlets', none: 'Outlets', unknown: 'Outlets ?' };
+const outlets = {
+  cls: shop.outlets === 'many' || shop.outlets === 'some' ? 'good' : shop.outlets === 'few' ? 'warn' : shop.outlets === 'none' ? 'bad' : '',
+  text: outletText[shop.outlets],
+};
+---
+
+<ul class="amenities" aria-label="Amenities">
+  <li class:list={['pill', wifi.cls]}><Icon name="wifi" />{wifi.text}</li>
+  <li class:list={['pill', outlets.cls]}><Icon name="plug" />{outlets.text}</li>
+  {shop.laptop === 'yes' && <li class="pill good"><Icon name="laptop" />Laptop-friendly</li>}
+  {shop.laptop === 'no' && <li class="pill bad"><Icon name="laptop" />Laptops</li>}
+  {shop.quiet && <li class="pill good"><Icon name="volume" />Quiet</li>}
+</ul>
+
+<style>
+  .amenities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

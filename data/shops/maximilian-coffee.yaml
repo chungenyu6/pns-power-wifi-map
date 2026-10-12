@@ -1,0 +1,13 @@
+# Added by hand
+name: Maximilian Coffee
+area: east-hill
+address: 3419 N 12th Ave, Pensacola, FL 32503
+lat: 30.447708
+lng: -87.208174
+summary: Neighborhood cafe serving Amavida coffee; sister spot to Cactus Flower Cafe.
+laptop_friendly: yes
+sources:
+  - type: web
+    date: 2026-10-12
+    note: 'Visit Pensacola: "perfect spot to catch up with friends or do some work"'
+    url: https://www.visitpensacola.com/blog/the-complete-guide-to-coffee-shops-in-pensacola/

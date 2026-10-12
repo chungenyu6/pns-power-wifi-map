@@ -1,0 +1,16 @@
+# Added by hand
+name: Foxtail Coffee
+area: downtown
+address: 500 W Jackson St, Pensacola, FL 32501
+lat: 30.418389
+lng: -87.223534
+summary: Foxtail's first Pensacola cafe, on the edge of Belmont-DeVilliers. Spacious indoor seating and a patio. Gelato too.
+hours: Su-Th 06:00-18:00; Fr-Sa 06:00-20:00
+links:
+  website: https://www.foxtailcoffee.com/locations/foxtail-coffee-west-jackson-st,-fl
+  instagram: https://www.instagram.com/foxtailcoffeeco/
+sources:
+  - type: official-site
+    date: 2026-10-12
+    note: Hours, seating
+    url: https://www.foxtailcoffee.com/locations/foxtail-coffee-west-jackson-st,-fl

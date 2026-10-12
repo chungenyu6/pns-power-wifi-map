@@ -1,0 +1,16 @@
+# Seeded from OpenStreetMap node/5962170797
+name: Fosko Coffee Barre
+area: downtown
+address: 8 South Palafox Street, Pensacola, FL 32501
+lat: 30.412526
+lng: -87.215148
+links: {}
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/node/5962170797
+  - type: web
+    date: 2026-10-12
+    note: Visit Pensacola coffee guide
+    url: https://www.visitpensacola.com/blog/the-complete-guide-to-coffee-shops-in-pensacola/
+summary: Spacious coffee shop just off Palafox. Crepes too.

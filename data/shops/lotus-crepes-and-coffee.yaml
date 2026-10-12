@@ -1,0 +1,11 @@
+# Seeded from OpenStreetMap way/418196797
+name: Lotus Crepes And Coffee
+area: northwest
+address: 9329 North Palafox Street, Pensacola, FL 32534
+lat: 30.532375
+lng: -87.273804
+links: {}
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/way/418196797

@@ -1,0 +1,20 @@
+# Seeded from OpenStreetMap way/357256751
+name: Starbucks
+chain: true
+area: university
+address: 1701 East Nine Mile Road, Pensacola, FL 32514
+lat: 30.531702
+lng: -87.226513
+links:
+  website: https://www.starbucks.com/store-locator/store/18238/nine-mile-rd-hillview-drive-1701-e-nine-mile-rd-pensacola-fl-325145729-us
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/way/357256751
+  - type: official-site
+    date: 2026-10-12
+    note: Starbucks offers free Wi-Fi in its stores
+    url: https://www.starbucks.com/
+wifi:
+  available: yes
+  password: none

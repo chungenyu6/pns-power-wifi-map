@@ -1,0 +1,14 @@
+# Seeded from OpenStreetMap node/14024478501
+name: Bad Ass Coffee of Hawaii
+chain: true
+area: pensacola-beach
+address: 5 Via de Luna Drive, Pensacola, FL 32561
+lat: 30.334449
+lng: -87.137314
+hours: Mo-Su 06:00-17:00
+links:
+  website: http://badasscoffee.orderexperience.com/
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/node/14024478501

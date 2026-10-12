@@ -1,0 +1,21 @@
+# Added by hand
+name: Barnes & Noble Café (Starbucks)
+chain: true
+area: midtown
+address: 1200 Airport Blvd, Pensacola, FL 32504
+lat: 30.480775
+lng: -87.217109
+summary: Starbucks cafe inside Barnes & Noble at Cobblestone at Cordova. Quiet mornings and evenings, busy after school.
+wifi:
+  available: yes
+  password: unknown
+  notes: Strong network
+power:
+  outlets: many
+laptop_friendly: yes
+noise: moderate
+sources:
+  - type: web
+    date: 2026-10-12
+    note: "UWF Voyager study-spot guide (2023): strong Wi-Fi, plenty of outlets and tables"
+    url: https://uwfvoyager.com/3829/campus-life/top-five-study-spots-for-hard-working-argos/

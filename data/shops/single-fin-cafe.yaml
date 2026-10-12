@@ -1,0 +1,23 @@
+# Seeded from OpenStreetMap way/355522522
+name: Single Fin Cafe
+area: downtown
+address: 380 North 9th Avenue, Pensacola, FL 32502
+lat: 30.418214
+lng: -87.205585
+wifi:
+  available: yes
+  password: unknown
+hours: Mo-Th 08:00-18:00; Fr-Sa 08:00-21:00; Su 09:00-16:00
+links:
+  website: https://cafesinglefin.com/
+  facebook: https://www.facebook.com/CafeSingleFin
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/way/355522522
+  - type: web
+    date: 2026-10-12
+    note: "Yelp: listed as good for working, reviewer praises Wi-Fi"
+    url: https://www.yelp.com/search?find_desc=Places+To+Study+Free+Wifi&find_loc=Pensacola%2C+FL
+summary: Cafe with food; reviewers mention great Wi-Fi.
+laptop_friendly: yes

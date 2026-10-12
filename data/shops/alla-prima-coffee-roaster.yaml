@@ -1,0 +1,23 @@
+# Seeded from OpenStreetMap node/12156821602
+name: Alla Prima Coffee Roaster
+area: downtown
+address: 532 West Garden Street, Pensacola, FL 32502
+lat: 30.411842
+lng: -87.223187
+wifi:
+  available: yes
+  password: unknown
+hours: Mo-We 07:00-15:00; Th-Sa 07:00-20:00; Su 09:00-18:00
+links:
+  website: https://www.allaprimacoffee.com/
+  instagram: https://www.instagram.com/allaprimacoffee
+  facebook: https://www.facebook.com/allaprimacoffeeroaster
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/node/12156821602
+  - type: web
+    date: 2026-10-12
+    note: Visit Pensacola coffee guide
+    url: https://www.visitpensacola.com/blog/the-complete-guide-to-coffee-shops-in-pensacola/
+summary: Micro-roastery with comfortable seating for reading or meeting a friend.

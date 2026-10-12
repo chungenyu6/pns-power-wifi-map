@@ -1,0 +1,15 @@
+# Seeded from OpenStreetMap node/3590228893
+name: Drowsy Poet at Innerlight
+area: pensacola-beach
+address: 655 Pensacola Beach Boulevard, Pensacola Beach, FL 32561
+lat: 30.336507
+lng: -87.144898
+wifi:
+  available: yes
+  password: none
+hours: Mo-Sa 06:00-21:00; Su 06:00-15:00
+links: {}
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/node/3590228893

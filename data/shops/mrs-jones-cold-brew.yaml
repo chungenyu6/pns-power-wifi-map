@@ -1,0 +1,15 @@
+# Seeded from OpenStreetMap node/11659985291
+name: Mrs. Jones Cold Brew
+area: northwest
+address: 1449 West Nine Mile Road, Pensacola, FL
+lat: 30.533262
+lng: -87.299668
+wifi:
+  available: yes
+  password: unknown
+links:
+  website: https://mrsjonescoldbrew.com/
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/node/11659985291

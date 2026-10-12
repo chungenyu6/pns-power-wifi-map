@@ -1,0 +1,17 @@
+# Seeded from OpenStreetMap node/4215033547
+name: Bodacious Brew
+area: downtown
+address: 407 South Palafox Street, Pensacola, FL
+lat: 30.407852
+lng: -87.214404
+links: {}
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/node/4215033547
+  - type: web
+    date: 2026-10-12
+    note: 'Visit Pensacola: "ideal spot for … settling down to work"'
+    url: https://www.visitpensacola.com/blog/the-complete-guide-to-coffee-shops-in-pensacola/
+summary: Coffee bar at the corner of Palafox and Main, part of the Bodacious shops. Food menu too.
+laptop_friendly: yes

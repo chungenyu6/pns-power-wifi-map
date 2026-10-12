@@ -1,0 +1,23 @@
+# Seeded from OpenStreetMap node/9278744317
+name: Coffee Guy Cafe
+area: university
+address: 6700 North Davis Highway, Pensacola, FL 32504
+lat: 30.49436
+lng: -87.222001
+wifi:
+  available: yes
+  password: none
+  notes: Free Wi-Fi; strong signal
+hours: Mo-Fr 06:00-21:00; Sa 07:00-21:00; Su 08:00-21:00
+links:
+  website: https://coffeeguycafe.com/
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/node/9278744317
+  - type: web
+    date: 2026-10-12
+    note: "Yelp: listed as good for working; reviewer mentions free Wi-Fi"
+    url: https://www.yelp.com/search?find_desc=Places+To+Study+Free+Wifi&find_loc=Pensacola%2C+FL
+summary: Local cafe off Davis Highway near I-10, popular for working.
+laptop_friendly: yes

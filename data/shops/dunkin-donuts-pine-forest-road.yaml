@@ -1,0 +1,14 @@
+# Seeded from OpenStreetMap way/599054600
+name: Dunkin' Donuts
+chain: true
+area: northwest
+address: 9225 Pine Forest Road, Pensacola, FL 32534
+lat: 30.531708
+lng: -87.313721
+hours: 05:00-20:00
+links:
+  website: https://locations.dunkindonuts.com/en/fl/pensacola/9225-pine-forest-rd/356620
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/way/599054600

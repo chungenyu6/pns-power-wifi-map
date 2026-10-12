@@ -1,0 +1,14 @@
+# Seeded from OpenStreetMap node/13474164451
+name: Genie’s Coffee Shop
+area: university
+address: 1922 Creighton Road, Pensacola, FL 32504
+lat: 30.495805
+lng: -87.202773
+hours: Mo-Fr 07:00-14:00; Sa 10:00-14:00; Su off
+links:
+  website: https://geniescoffeeshop.com/
+  facebook: https://www.facebook.com/p/Genies-Coffee-Shop-61583324287973/
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/node/13474164451

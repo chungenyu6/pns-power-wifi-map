@@ -1,0 +1,14 @@
+---
+// Mark: a coffee cup with a charging bolt and two wisps of steam.
+interface Props {
+  size?: number;
+}
+const { size = 30 } = Astro.props;
+---
+
+<svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden="true" class="logo-mark">
+  <path d="M11 3.5c-1.2 1.3 1.2 2.5 0 3.8M16.5 3.5c-1.2 1.3 1.2 2.5 0 3.8" stroke="var(--green-soft)" stroke-width="1.8" stroke-linecap="round"></path>
+  <rect x="4.5" y="10.5" width="18" height="16" rx="4.5" stroke="var(--navy)" stroke-width="2.2"></rect>
+  <path d="M22.5 14h1.8a3.7 3.7 0 0 1 0 7.4h-1.8" stroke="var(--navy)" stroke-width="2.2"></path>
+  <path d="M15.2 13.2 10.6 19.6h3.3l-1 4.3 4.7-6.5h-3.3z" fill="var(--green-soft)"></path>
+</svg>

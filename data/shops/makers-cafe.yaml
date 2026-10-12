@@ -1,0 +1,20 @@
+# Seeded from OpenStreetMap node/14027384212
+name: Maker's Cafe & Espresso Bar
+area: downtown
+address: 422 South Palafox Street, Pensacola, FL
+lat: 30.407887
+lng: -87.214043
+hours: Mo-Sa 07:00-17:00
+links:
+  website: https://makerscafe.us/
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/node/14027384212
+  - type: web
+    date: 2026-10-12
+    note: Yelp free Wi-Fi listings
+    url: https://www.yelp.com/search?find_desc=Places+To+Study+Free+Wifi&find_loc=Pensacola%2C+FL
+wifi:
+  available: yes
+  password: unknown

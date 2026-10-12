@@ -1,0 +1,28 @@
+---
+import { FRESHNESS_LABEL, daysAgo, type Freshness } from '../lib/meta';
+
+interface Props {
+  freshness: Freshness;
+  verified?: Date;
+}
+const { freshness, verified } = Astro.props;
+const cls = { fresh: 'good', aging: 'warn', stale: '', unverified: '' }[freshness];
+const title = verified ? `Last confirmed ${verified.toISOString().slice(0, 10)}` : 'Nobody has confirmed these details yet';
+---
+
+<span class:list={['pill', 'fresh', cls]} title={title}>
+  <span class="dot"></span>
+  {FRESHNESS_LABEL[freshness]}
+  {verified && <span class="ago">· {daysAgo(verified)}</span>}
+</span>
+
+<style>
+  .fresh {
+    font-size: 0.75rem;
+    padding: 2px 9px;
+  }
+  .ago {
+    opacity: 0.8;
+    font-weight: 400;
+  }
+</style>

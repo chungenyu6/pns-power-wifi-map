@@ -1,0 +1,346 @@
+---
+import Base from '../layouts/Base.astro';
+import Amenities from '../components/Amenities.astro';
+import FreshBadge from '../components/FreshBadge.astro';
+import { getShops, toView } from '../lib/shops';
+import { AREAS } from '../lib/meta';
+
+const shops = await getShops();
+const views = shops.map((s) => toView(s));
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const usedAreas = Object.entries(AREAS).filter(([key]) => views.some((v) => v.area === key));
+const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/Chicago' });
+---
+
+<Base app>
+  <div class="layout">
+    <section class="panel" aria-label="Coffee shops">
+      <div class="intro">
+        <h1>Coffee, Wi-Fi <span class="amp">&amp;</span> a place to plug in.</h1>
+        <p class="muted">Pensacola coffee shops for getting work done, kept fresh by locals.</p>
+      </div>
+
+      <div class="controls">
+        <label class="search">
+          <span class="visually-hidden">Search shops</span>
+          <input id="q" type="search" placeholder="Search by name or street" autocomplete="off" />
+        </label>
+        <div class="chips" role="group" aria-label="Filters">
+          <button type="button" class="chip" data-filter="wifi" aria-pressed="false">Wi-Fi</button>
+          <button type="button" class="chip" data-filter="outlets" aria-pressed="false">Outlets</button>
+          <button type="button" class="chip" data-filter="open" aria-pressed="false">Open now</button>
+          <button type="button" class="chip" data-filter="laptop" aria-pressed="false">Laptop-friendly</button>
+          <button type="button" class="chip" data-filter="quiet" aria-pressed="false">Quiet</button>
+          <label class="area">
+            <span class="visually-hidden">Area</span>
+            <select id="area">
+              <option value="">All areas</option>
+              {usedAreas.map(([key, label]) => <option value={key}>{label}</option>)}
+            </select>
+          </label>
+        </div>
+        <p class="count muted" aria-live="polite"><span id="count">{views.length}</span> shops · Updated {updated}</p>
+      </div>
+
+      <ol class="list" id="list">
+        {
+          views.map((v) => (
+            <li
+              class="card"
+              data-slug={v.slug}
+              data-name={`${v.name} ${v.address}`.toLowerCase()}
+              data-area={v.area}
+              data-wifi={v.wifi}
+              data-outlets={v.outlets}
+              data-laptop={v.laptop}
+              data-quiet={String(v.quiet)}
+              data-hours={v.hours ?? ''}
+            >
+              <div class="card-top">
+                <h2>
+                  <a href={`${base}/shops/${v.slug}`}>{v.name}</a>
+                </h2>
+                <span class="open-state" />
+              </div>
+              <p class="addr muted">
+                {AREAS[v.area as keyof typeof AREAS]} · {v.address.split(',')[0]}
+              </p>
+              <Amenities shop={v} />
+              <div class="card-foot">
+                <FreshBadge freshness={v.freshness} verified={shops.find((s) => s.id === v.slug)!.data.last_verified} />
+                <button type="button" class="locate" aria-label={`Show ${v.name} on the map`}>
+                  Map
+                </button>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="empty muted" id="empty" hidden>No shops match these filters yet. Know one? Tell us on the shop page.</p>
+    </section>
+
+    <div class="map-wrap">
+      <div id="map" role="region" aria-label="Map of coffee shops"></div>
+      <div class="legend" aria-hidden="true">
+        <span><i class="charge"></i>Wi-Fi + outlets</span>
+        <span><i class="wifi"></i>Wi-Fi</span>
+        <span><i class="unknown"></i>Not confirmed</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="application/json" id="shops-data" set:html={JSON.stringify({ base, shops: views })} />
+  <script>
+    import { initMap } from '../scripts/map';
+    import { initFilters } from '../scripts/filters';
+    const data = JSON.parse(document.getElementById('shops-data')!.textContent!);
+    const map = initMap(data);
+    initFilters(map);
+  </script>
+</Base>
+
+<style>
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(340px, 420px) 1fr;
+    height: 100%;
+  }
+
+  .panel {
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+    padding: 24px 16px 40px;
+  }
+
+  .intro h1 {
+    font-size: 1.75rem;
+    margin-bottom: 6px;
+  }
+
+  .amp {
+    color: var(--green);
+    font-style: italic;
+  }
+
+  .intro p {
+    margin-bottom: 18px;
+  }
+
+  .controls {
+    position: sticky;
+    top: -24px;
+    z-index: 2;
+    margin: 0 -16px;
+    padding: 8px 16px 4px;
+    background: var(--bg);
+  }
+
+  .search input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+  }
+
+  .search input::placeholder {
+    color: var(--muted);
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .chip,
+  .area select {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+
+  .chip[aria-pressed='true'] {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: var(--on-navy);
+  }
+
+  .count {
+    margin: 10px 0 6px;
+    font-size: 0.8rem;
+  }
+
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+  }
+
+  .card {
+    padding: 14px 14px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .card.active {
+    border-color: var(--navy);
+    box-shadow: var(--shadow);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .card h2 {
+    font-size: 1.08rem;
+    margin: 0;
+  }
+
+  .card h2 a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .card h2 a:hover {
+    text-decoration: underline;
+  }
+
+  .open-state {
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .open-state:global(.is-open) {
+    color: var(--green);
+  }
+
+  .open-state:global(.is-closed) {
+    color: var(--muted);
+  }
+
+  .addr {
+    margin: 2px 0 10px;
+    font-size: 0.85rem;
+  }
+
+  .card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+
+  .locate {
+    border: 0;
+    background: none;
+    color: var(--link);
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 4px 2px;
+  }
+
+  .empty {
+    padding: 24px 4px;
+  }
+
+  .map-wrap {
+    position: relative;
+    min-height: 0;
+  }
+
+  #map {
+    position: absolute;
+    inset: 0;
+  }
+
+  .legend {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    display: flex;
+    gap: 12px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    box-shadow: var(--shadow);
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .legend span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .legend i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--surface);
+    box-shadow: 0 0 0 1px var(--border);
+  }
+
+  .legend .charge {
+    background: var(--green-soft);
+  }
+
+  .legend .wifi {
+    background: var(--navy);
+  }
+
+  .legend .unknown {
+    background: #a8a49b;
+  }
+
+  @media (max-width: 760px) {
+    .layout {
+      grid-template-columns: 1fr;
+      grid-template-rows: 42% 1fr;
+    }
+
+    .map-wrap {
+      grid-row: 1;
+    }
+
+    .panel {
+      grid-row: 2;
+      border-right: 0;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+
+    .intro {
+      display: none;
+    }
+
+    .controls {
+      top: -16px;
+    }
+
+    .legend {
+      left: 8px;
+      top: 8px;
+      gap: 8px;
+      font-size: 0.7rem;
+    }
+  }
+</style>

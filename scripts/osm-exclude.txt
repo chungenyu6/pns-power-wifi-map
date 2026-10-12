@@ -1,0 +1,16 @@
+# OSM elements the seeding script should skip. One "type/id" per line.
+# Reason after the "#" so we remember why.
+
+node/14024499801  # Starbucks, 250 Saufley St — on NAS Pensacola, base access only
+way/539565436     # Green Beans Coffee — on NAS Pensacola, base access only
+node/13740148377  # Order in the Cafe! — inside the courthouse
+node/13337053701  # Pacific Kava Bar — kava bar, not a coffee shop
+node/13529091682  # Happy Spot Nutrition — shake shop
+way/361999546     # The Ruby Slipper Cafe — sit-down brunch restaurant
+way/1317486039    # Native Cafe — sit-down breakfast restaurant
+way/1294849719    # Tru Teas — bubble tea
+way/1102760342    # The Bodacious Brew Thru — drive-thru only
+node/14054986160  # Seven Brew — drive-thru only
+way/354655670     # Coffee & Eye Guy — likely duplicate of Coffee Guy Cafe next door
+node/14107719479  # Dutch Bros — drive-thru only
+node/9027622497   # Drowsy Poet, Pace — outside Pensacola scope (Santa Rosa County)

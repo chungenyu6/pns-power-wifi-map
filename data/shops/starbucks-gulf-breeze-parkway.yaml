@@ -1,0 +1,20 @@
+# Seeded from OpenStreetMap way/147222565
+name: Starbucks
+chain: true
+area: gulf-breeze
+address: 346 Gulf Breeze Parkway, Gulf Breeze, FL 32561
+lat: 30.364686
+lng: -87.169213
+links:
+  website: https://www.starbucks.com/store-locator/store/12238/346-gulf-breeze-pkwy-346-gulf-breeze-pkwy-gulf-breeze-fl-325614492-us
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/way/147222565
+  - type: official-site
+    date: 2026-10-12
+    note: Starbucks offers free Wi-Fi in its stores
+    url: https://www.starbucks.com/
+wifi:
+  available: yes
+  password: none

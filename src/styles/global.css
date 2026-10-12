@@ -1,0 +1,299 @@
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/source-serif-4';
+
+:root {
+  --bg: #f7f5ef;
+  --surface: #fffdf8;
+  --surface-2: #efece3;
+  --border: #e3dfd4;
+  --text: #1f1e1d;
+  --muted: #6b6862;
+  --navy: #1f3a5f;
+  --link: #3a6a96;
+  --green: #2f7d5b;
+  --green-soft: #5ba37e;
+  --green-tint: #e3efe7;
+  --amber: #a26a12;
+  --amber-tint: #f6ecd9;
+  --gray-tint: #ebe8e1;
+  --on-navy: #f7f5ef;
+  --shadow: 0 1px 2px rgb(31 30 29 / 0.05), 0 4px 16px rgb(31 30 29 / 0.06);
+
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Source Serif 4 Variable', ui-serif, Georgia, serif;
+  --radius: 14px;
+  --header-h: 60px;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #14181f;
+    --surface: #1b2029;
+    --surface-2: #232a35;
+    --border: #2e3642;
+    --text: #ece9e2;
+    --muted: #a39f97;
+    --navy: #8fb3d9;
+    --link: #8fb3d9;
+    --green: #7cc49c;
+    --green-soft: #7cc49c;
+    --green-tint: #1d3329;
+    --amber: #e0b064;
+    --amber-tint: #3a2f1c;
+    --gray-tint: #262c36;
+    --on-navy: #14181f;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 16px rgb(0 0 0 / 0.3);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #14181f;
+  --surface: #1b2029;
+  --surface-2: #232a35;
+  --border: #2e3642;
+  --text: #ece9e2;
+  --muted: #a39f97;
+  --navy: #8fb3d9;
+  --link: #8fb3d9;
+  --green: #7cc49c;
+  --green-soft: #7cc49c;
+  --green-tint: #1d3329;
+  --amber: #e0b064;
+  --amber-tint: #3a2f1c;
+  --gray-tint: #262c36;
+  --on-navy: #14181f;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 16px rgb(0 0 0 / 0.3);
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+  font-weight: 560;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin: 0 0 0.5em;
+}
+
+h1 {
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+}
+
+h2 {
+  font-size: 1.4rem;
+}
+
+h3 {
+  font-size: 1.1rem;
+}
+
+p {
+  margin: 0 0 1em;
+}
+
+a {
+  color: var(--link);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.container {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 40px 16px 64px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+/* Pills / badges */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.5;
+  background: var(--gray-tint);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.pill svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+.pill.good {
+  background: var(--green-tint);
+  color: var(--green);
+}
+
+.pill.warn {
+  background: var(--amber-tint);
+  color: var(--amber);
+}
+
+.pill.bad {
+  background: var(--gray-tint);
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--navy);
+  background: var(--navy);
+  color: var(--on-navy);
+  font: inherit;
+  font-weight: 550;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--navy);
+}
+
+/* Map markers & popups (rendered by MapLibre outside Astro's scoped styles) */
+.marker {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2.5px solid var(--surface);
+  background: #a8a49b;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.marker.charge {
+  background: var(--green-soft);
+}
+
+.marker.wifi {
+  background: var(--navy);
+}
+
+.marker:hover,
+.marker.active {
+  transform: scale(1.35);
+}
+
+.marker-wrap:has(.marker.active) {
+  z-index: 2;
+}
+
+.marker-wrap[hidden] {
+  display: none;
+}
+
+.maplibregl-popup-content {
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  font-family: var(--font-sans);
+}
+
+.maplibregl-popup-tip {
+  border-top-color: var(--surface) !important;
+  border-bottom-color: var(--surface) !important;
+}
+
+.popup-title {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.popup-meta {
+  margin-top: 2px;
+  font-size: 0.8rem;
+  color: var(--green);
+}
+
+.popup-addr {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.maplibregl-ctrl-group {
+  border-radius: 10px !important;
+}
+
+/* Dark basemap: invert the light tiles instead of loading a second style. */
+:root[data-theme='dark'] .maplibregl-canvas {
+  filter: invert(0.92) hue-rotate(180deg) saturate(0.6) brightness(0.95);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .maplibregl-canvas {
+    filter: invert(0.92) hue-rotate(180deg) saturate(0.6) brightness(0.95);
+  }
+}

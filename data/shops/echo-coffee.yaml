@@ -1,0 +1,23 @@
+# Seeded from OpenStreetMap node/13796175889
+name: Echo Coffee
+area: midtown
+address: 3892 North Davis Highway, Pensacola, FL 32503-3025
+lat: 30.453089
+lng: -87.219087
+hours: Mo-Fr 07:00-14:30; Sa 07:30-18:00; Su 07:30-12:30
+links:
+  website: https://echocoffee.square.site/
+  instagram: https://www.instagram.com/echocoffeecopensacola
+  facebook: https://www.facebook.com/p/Echo-Coffee-Co-61563204407792
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/node/13796175889
+  - type: web
+    date: 2026-10-12
+    note: Yelp listing shows Wi-Fi
+    url: https://www.yelp.com/search?find_desc=Places+To+Study+Free+Wifi&find_loc=Pensacola%2C+FL
+summary: Not-for-profit coffee shop with free parking.
+wifi:
+  available: yes
+  password: unknown

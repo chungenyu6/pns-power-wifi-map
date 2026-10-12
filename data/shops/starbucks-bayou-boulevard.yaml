@@ -1,0 +1,20 @@
+# Seeded from OpenStreetMap way/353326471
+name: Starbucks
+chain: true
+area: midtown
+address: 5040 Bayou Boulevard, Pensacola, FL 32503
+lat: 30.472653
+lng: -87.209551
+links:
+  website: https://www.starbucks.com/store-locator/store/16116/bayou-blvd-9th-ave-5040-bayou-blvd-pensacola-fl-325032504-us
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/way/353326471
+  - type: official-site
+    date: 2026-10-12
+    note: Starbucks offers free Wi-Fi in its stores
+    url: https://www.starbucks.com/
+wifi:
+  available: yes
+  password: none

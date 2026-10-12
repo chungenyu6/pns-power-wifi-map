@@ -1,0 +1,14 @@
+# Seeded from OpenStreetMap node/4732389125
+name: Starbucks (inside Target)
+chain: true
+area: university
+address: 1749 East Nine Mile Road, Pensacola, FL 32514
+lat: 30.529865
+lng: -87.223909
+links:
+  website: https://www.starbucks.com/store-locator/store/91352/target-pensacola-ne-1273-1749-e-nine-mile-rd-pensacola-fl-32514-us
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/node/4732389125
+summary: Small cafe inside Target; limited seating.

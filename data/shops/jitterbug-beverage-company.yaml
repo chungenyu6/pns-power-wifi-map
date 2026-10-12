@@ -1,0 +1,24 @@
+# Seeded from OpenStreetMap node/12455100001
+name: Jitterbug Beverage Company
+area: east-hill
+address: 2050 North 12th Avenue, Pensacola, FL 32503
+lat: 30.435953
+lng: -87.205264
+wifi:
+  available: yes
+  password: none
+  notes: Free Wi-Fi for everyone
+hours: Tu-Sa 07:30-19:00; Su 09:00-16:00
+links:
+  website: https://drinkjitterbug.com/
+  instagram: https://www.instagram.com/drink.jitterbug
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/node/12455100001
+  - type: web
+    date: 2026-10-12
+    note: "UWF Voyager study-spot guide (2023): free Wi-Fi, slight background noise"
+    url: https://uwfvoyager.com/3829/campus-life/top-five-study-spots-for-hard-working-argos/
+summary: Eclectic chairs and couches, shares the space with Revolver Records.
+noise: moderate

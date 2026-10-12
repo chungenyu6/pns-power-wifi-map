@@ -1,0 +1,13 @@
+# Seeded from OpenStreetMap node/14027384202
+name: Parlor Doughnuts
+area: downtown
+address: 120 South Palafox Street, Pensacola, FL
+lat: 30.410613
+lng: -87.214713
+hours: Su-We 06:30-16:00;Th-Sa 06:30-18:30
+links:
+  website: https://www.parlordoughnuts.com/shops/pensacola-fl
+sources:
+  - type: osm
+    date: 2026-10-12
+    url: https://www.openstreetmap.org/node/14027384202

@@ -1,0 +1,21 @@
+# Added by hand
+name: Bon Beans Coffee & Tea
+area: university
+address: 875 E Nine Mile Rd, Suite 3, Pensacola, FL 32514
+lat: 30.531865
+lng: -87.246103
+summary: About five minutes from UWF. Coffee, tea, smoothies, gluten-free and vegan snacks.
+wifi:
+  available: yes
+  password: unknown
+noise: quiet
+laptop_friendly: yes
+sources:
+  - type: web
+    date: 2026-10-12
+    note: "UWF Voyager study-spot guide (2023): Wi-Fi, usually quieter"
+    url: https://uwfvoyager.com/3829/campus-life/top-five-study-spots-for-hard-working-argos/
+  - type: web
+    date: 2026-10-12
+    note: Visit Pensacola coffee guide
+    url: https://www.visitpensacola.com/blog/the-complete-guide-to-coffee-shops-in-pensacola/
