@@ -20,7 +20,7 @@
 | 0.4 | `git init` + 第一次 commit | ✅ | `git log` | main 分支 |
 | 0.5 | 建立 GitHub repo 並 push | ✅ | `gh repo view` | public：github.com/chungenyu6/pns-power-wifi-map |
 | 0.6 | `.npmrc`（快取放專案內）+ Astro 骨架 + `npm install` | ✅ | `npm run build` 成功；`~/.npm` 沒有新增檔案 | Astro 7.3.8；`~/.npm` 新增 0 個檔案；Playwright 固定 1.62.0，沿用本機已有的 Chromium 1234，沒有下載瀏覽器 |
-| 0.7 | `deploy.yml` + 開啟 GitHub Pages | 🟨 | 線上網址打得開 | Pages 已由你開啟（build_type: workflow）；待 push 後確認 |
+| 0.7 | `deploy.yml` + 開啟 GitHub Pages | ✅ | 線上網址打得開 | https://chungenyu6.github.io/pns-power-wifi-map/ ，console 無錯誤；每天自動重新部署一次 |
 
 ## Phase 1：MVP
 
@@ -36,9 +36,9 @@
 | 1.8 | 篩選（Wi-Fi、插座、Open now、筆電友善、安靜、區域） | ✅ | Playwright 測試 | Wi-Fi、區域、搜尋、空結果都有測；Open now 以 Pensacola 時區（中部時間）計算，營業時間解析器有單元測試 |
 | 1.9 | 店家頁 `/shops/[slug]` + 新鮮度徽章 | ✅ | 每間店的頁面都打得開 | 28 頁全部 200 |
 | 1.10 | About / 資料方法 / FAQ / 免責聲明 | ✅ | 內容檢查 | |
-| 1.11 | `ci.yml`：PR 時驗證 + build + 測試 | 🟨 | CI 綠燈 | 本機 28/28 通過；待 push 後看 CI |
-| 1.12 | Lighthouse ≥ 90 | ⬜ | Lighthouse 報告 | |
-| 1.13 | 上線 + 手機實測 | ⬜ | GitHub Pages 網址 | |
+| 1.11 | `ci.yml`：PR 時驗證 + build + 測試 | ✅ | CI 綠燈 | 本機與 GitHub CI 都是 28/28 通過；`astro check` 0 錯誤 |
+| 1.12 | Lighthouse ≥ 90 | ⏸️ | Lighthouse 報告 | 需要安裝 `lighthouse` npm 套件（裝在專案內），等你同意 |
+| 1.13 | 上線 + 手機實測 | 🟨 | GitHub Pages 網址 | 已上線；手機版用內建瀏覽器模擬測過，還需要你用真的手機看一次 |
 
 ## Phase 1.5：網站留言（需要你先註冊 Supabase）
 
