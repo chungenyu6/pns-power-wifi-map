@@ -7,7 +7,8 @@ lat: 30.334449
 lng: -87.137314
 hours: Mo-Su 06:00-17:00
 links:
-  website: http://badasscoffee.orderexperience.com/
+  website: https://locations.badasscoffee.com/fl/pensacola-beach/5-via-de-luna-dr/
+  facebook: https://www.facebook.com/p/Bad-Ass-Coffee-of-Hawaii-100090276993842/
 sources:
   - type: osm
     date: 2026-10-12

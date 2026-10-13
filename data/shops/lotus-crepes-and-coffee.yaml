@@ -4,7 +4,9 @@ area: northwest
 address: 9329 North Palafox Street, Pensacola, FL 32534
 lat: 30.532375
 lng: -87.273804
-links: {}
+links:
+  website: https://www.lotuscoffeeshop.com/
+  facebook: https://www.facebook.com/p/Lotus-crepe-and-coffeeshop-61574727882585/
 sources:
   - type: osm
     date: 2026-10-12

@@ -6,6 +6,8 @@ lat: 30.447708
 lng: -87.208174
 summary: Neighborhood cafe serving Amavida coffee; sister spot to Cactus Flower Cafe.
 laptop_friendly: yes
+links:
+  facebook: https://www.facebook.com/maximiliancoffee/
 sources:
   - type: web
     date: 2026-10-12

@@ -8,7 +8,8 @@ wifi:
   available: yes
   password: none
 hours: Mo-Sa 06:00-21:00; Su 06:00-15:00
-links: {}
+links:
+  facebook: https://www.facebook.com/drowsypoetpensacolabeach/
 sources:
   - type: osm
     date: 2026-10-12
