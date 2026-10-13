@@ -215,6 +215,8 @@ test('votes upgrade unknown tags and refresh the freshness badge, everywhere', a
   await expect(card.locator('li[data-attr="outlets"]')).toHaveText('Outlets?'); // one 👎 isn't a verdict
   await expect(card.locator('.fresh')).toHaveText('Confirmed today');
   await expect(card.locator('.fresh')).toHaveClass(/good/);
+  // Map marker follows the same rule: Wi-Fi yes, outlets unknown → "wifi" (navy).
+  await expect(page.getByRole('button', { name: 'Bodacious Brew', exact: true })).toHaveClass(/marker wifi/);
 
   await page.goto('./shops/bodacious-brew');
   await expect(page.locator('.row[data-attr="wifi"] .row-value')).toHaveText("Yes (locals' votes)");
@@ -232,4 +234,12 @@ test('list, filters and votes still work when the map library fails to load', as
   await expect(page.locator('.card[data-slug="echo-coffee"] .vote[data-q="wifi"] [data-v="up"] b')).toHaveText('1');
   await page.getByPlaceholder('Search by name or street').fill('echo');
   await expect(page.locator('.card:not([hidden])')).toHaveCount(1);
+});
+
+test('two outlet votes turn a Wi-Fi marker green', async ({ page }) => {
+  const at = new Date().toISOString();
+  const row = (id: number) => ({ id, created_at: at, shop_slug: 'jitterbug-beverage-company', is_open: null, wifi_works: null, outlets: 'some', laptop_ok: null, quiet: null, wifi_password: null, comment: null });
+  await page.route('**/rest/v1/reports**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([row(1), row(2)]) }));
+  await page.goto('./');
+  await expect(page.getByRole('button', { name: 'Jitterbug Beverage Company', exact: true })).toHaveClass(/marker charge/);
 });

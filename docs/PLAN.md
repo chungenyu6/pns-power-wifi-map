@@ -363,6 +363,9 @@ Pensacola 市區與周邊：Downtown、East Hill、North Hill、Cordova Mall 一
 ### 新鮮度標籤：一種格式
 `Confirmed today / 3 days ago / 2 months ago / Not confirmed yet`，取「我們最後確認的日期」和「最新一張投票」裡比較新的那個。**在地人按一下 👍👎 就算確認一次。**
 
+### 地圖標記
+和設施標籤用同一套規則：投票讓 Wi-Fi 變成「有」→ 深藍；Wi-Fi 和插座都「有」→ 綠色。頁面上即時更新，不用等重新部署。
+
 ### 營業狀態
 卡片右上角：6 小時內有人回報 →「Reported open · 2h ago」；沒有的話就照營業時間顯示「Open now / Closed」。原本另外一條「Local report」已經拿掉。
 

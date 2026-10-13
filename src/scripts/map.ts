@@ -2,6 +2,8 @@ import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import type { ShopView, SpotView } from '../lib/shops';
+import { markerTone, merge } from '../lib/status';
+import { latestTallies, type Tallies } from './votes';
 
 export type MapApi = {
   show(slugs: Set<string>): void;
@@ -91,6 +93,18 @@ export function initMap({ base, shops, spots = [] }: { base: string; shops: Shop
     const popup = new maplibregl.Popup({ offset: 12, closeButton: false, maxWidth: '260px' }).setHTML(html);
     markers.set(spot.slug, new maplibregl.Marker({ element: el }).setLngLat([spot.lng, spot.lat]).setPopup(popup).addTo(map));
   }
+
+  // Recolor markers when locals' votes settle an unknown Wi-Fi/outlet status (same rule as the pills).
+  function recolor(tallies: Tallies) {
+    for (const shop of shops) {
+      const t = tallies.get(shop.slug);
+      const tone = markerTone(merge('wifi', shop.wifi, t?.wifi), merge('outlets', shop.outlets, t?.outlets));
+      const dot = markers.get(shop.slug)?.getElement().querySelector('.marker');
+      if (dot) dot.className = `marker ${tone}${dot.classList.contains('active') ? ' active' : ''}`;
+    }
+  }
+  if (latestTallies) recolor(latestTallies);
+  document.addEventListener('votes:changed', (e) => recolor((e as CustomEvent<Tallies>).detail));
 
   function highlight(slug: string, scrollList: boolean) {
     document.querySelectorAll('.card.active').forEach((c) => c.classList.remove('active'));

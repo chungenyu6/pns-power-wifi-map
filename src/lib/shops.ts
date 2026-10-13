@@ -1,5 +1,6 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { freshness, type Freshness } from './meta';
+import { markerTone } from './status';
 
 export type Shop = CollectionEntry<'shops'>;
 
@@ -41,7 +42,6 @@ function score(s: Shop): number {
 
 export function toView(s: Shop, now = new Date()): ShopView {
   const d = s.data;
-  const hasOutlets = ['some', 'many'].includes(d.power.outlets);
   return {
     slug: s.id,
     name: d.name,
@@ -58,7 +58,7 @@ export function toView(s: Shop, now = new Date()): ShopView {
     noise: d.noise,
     quiet: d.noise === 'quiet',
     freshness: freshness(d.last_verified, now),
-    tone: d.wifi.available === 'yes' && hasOutlets ? 'charge' : d.wifi.available === 'yes' ? 'wifi' : 'unknown',
+    tone: markerTone(d.wifi.available, d.power.outlets),
   };
 }
 

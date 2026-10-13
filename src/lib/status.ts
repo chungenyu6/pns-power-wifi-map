@@ -71,3 +71,11 @@ export function freshBadge(verified: Date | undefined, now = new Date()): { tone
     text: verified ? `Confirmed ${daysAgo(verified, now)}` : 'Not confirmed yet',
   };
 }
+
+export type MarkerTone = 'charge' | 'wifi' | 'unknown';
+
+/** Map marker color: Wi-Fi + outlets / Wi-Fi only / not confirmed. */
+export function markerTone(wifi: Values['wifi'], outlets: Values['outlets']): MarkerTone {
+  if (wifi !== 'yes') return 'unknown';
+  return outlets === 'some' || outlets === 'many' ? 'charge' : 'wifi';
+}

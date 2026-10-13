@@ -88,6 +88,12 @@ export function tally(reports: Report[], now = Date.now()): Tallies {
 /** Locals agree: at least 2 votes and more yes than no. */
 export const localsSayYes = (t?: Tally) => verdict(t) === 'yes';
 
+/** Latest tallies, for code that loads after votes (e.g. the map). */
+export let latestTallies: Tallies | null = null;
+document.addEventListener('votes:changed', (e) => {
+  latestTallies = (e as CustomEvent<Tallies>).detail;
+});
+
 export async function initVotes(): Promise<Tallies> {
   const groups = [...document.querySelectorAll<HTMLElement>('.votes[data-slug]')];
   let tallies: Tallies = new Map();
