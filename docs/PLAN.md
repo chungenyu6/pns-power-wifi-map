@@ -371,3 +371,22 @@ Pensacola 市區與周邊：Downtown、East Hill、North Hill、Cordova Mall 一
 
 ### 名稱
 「Laptop-friendly」改成 **Good for working**：Yelp 用的就是這個說法，也和投票題目「Good for working?」一致。
+
+---
+
+## 16. Lighthouse 與手機版版面（2026-10-13）
+
+**問題**：首頁在手機上效能只有 48 分。地圖程式（281 KB）在中階手機上要跑大約 7 秒的 CPU，打開後會卡一陣子。
+
+**改法**：手機改成**清單優先**，底部有浮動的「Map」按鈕，按下才打開全螢幕地圖，也是那時才下載地圖程式（Yelp、Airbnb 的手機版也是這樣做）。桌機不變。
+
+| 頁面 | 手機（效能 / 無障礙 / 最佳實踐 / SEO） | 桌機 |
+|---|---|---|
+| 首頁 | 100 / 100 / 100 / 100 | 100 / 96 / 100 / 100 |
+| 店家頁 | 99 / 100 / 100 / 100 | 100 / 100 / 100 / 100 |
+| About、Add | 100 / 100 / 100 / 100 | 100 / 100 / 100 / 100 |
+
+**自己重跑的方法**（Lighthouse 已裝在專案裡，報告存在 `.lighthouse/`，不會被 commit）：
+```bash
+CHROME_PATH="$HOME/Library/Caches/ms-playwright/chromium-1234/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing" npx lighthouse https://chungenyu6.github.io/pns-power-wifi-map/ --view
+```
