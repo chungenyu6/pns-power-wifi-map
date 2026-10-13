@@ -8,6 +8,8 @@ import { latestTallies, type Tallies } from './votes';
 export type MapApi = {
   show(slugs: Set<string>): void;
   focus(slug: string): void;
+  /** Call after the map's container changes size or becomes visible. */
+  resize(): void;
 };
 
 // One light basemap for both themes; dark mode inverts the canvas with a CSS filter (see global.css).
@@ -116,6 +118,9 @@ export function initMap({ base, shops, spots = [] }: { base: string; shops: Shop
   }
 
   return {
+    resize() {
+      map.resize();
+    },
     show(slugs) {
       for (const [slug, marker] of markers) {
         if (slug.startsWith('spot-')) continue;

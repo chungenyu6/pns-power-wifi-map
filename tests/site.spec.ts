@@ -1,4 +1,11 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+/** On phones the map is behind a "Map" button and loads on demand. */
+async function openMap(page: Page) {
+  const toggle = page.locator('#view-toggle');
+  if (await toggle.isVisible()) await toggle.click();
+  await expect(page.locator('#map canvas')).toBeAttached();
+}
 
 test.describe('map page', () => {
   test.beforeEach(async ({ page }) => {
@@ -10,7 +17,7 @@ test.describe('map page', () => {
   test('lists shops and puts one marker on the map per shop', async ({ page }) => {
     const cards = page.locator('.card');
     expect(await cards.count()).toBeGreaterThanOrEqual(25);
-    await expect(page.locator('#map canvas')).toBeAttached();
+    await openMap(page);
     const spots = await page.locator('li.spot').count();
     await expect(page.locator('.marker-wrap')).toHaveCount((await cards.count()) + spots);
     await expect(page.locator('#count')).toHaveText(String(await cards.count()));
@@ -29,6 +36,7 @@ test.describe('map page', () => {
       expect(wifi).toBe('yes');
     }
     const spots = await page.locator('li.spot').count();
+    await openMap(page);
     await expect(page.locator('.marker-wrap:not([hidden])')).toHaveCount(n + spots);
     await expect(page.locator('#count')).toHaveText(String(n));
   });
@@ -216,6 +224,7 @@ test('votes upgrade unknown tags and refresh the freshness badge, everywhere', a
   await expect(card.locator('.fresh')).toHaveText('Confirmed today');
   await expect(card.locator('.fresh')).toHaveClass(/good/);
   // Map marker follows the same rule: Wi-Fi yes, outlets unknown → "wifi" (navy).
+  await openMap(page);
   await expect(page.getByRole('button', { name: 'Bodacious Brew', exact: true })).toHaveClass(/marker wifi/);
 
   await page.goto('./shops/bodacious-brew');
@@ -241,5 +250,35 @@ test('two outlet votes turn a Wi-Fi marker green', async ({ page }) => {
   const row = (id: number) => ({ id, created_at: at, shop_slug: 'jitterbug-beverage-company', is_open: null, wifi_works: null, outlets: 'some', laptop_ok: null, quiet: null, wifi_password: null, comment: null });
   await page.route('**/rest/v1/reports**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([row(1), row(2)]) }));
   await page.goto('./');
+  await openMap(page);
   await expect(page.getByRole('button', { name: 'Jitterbug Beverage Company', exact: true })).toHaveClass(/marker charge/);
+});
+
+test('phones get the list first; the map library loads only when the map is opened', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'phone layout only');
+  const mapRequests: string[] = [];
+  page.on('request', (r) => {
+    // The map script chunk and its worker (the stylesheet is tiny and loads up front).
+    if (/\/_astro\/(map\.[^/]*\.js|maplibre-gl-worker)/.test(r.url())) mapRequests.push(r.url());
+  });
+  await page.goto('./');
+  await expect(page.locator('.card').first()).toBeVisible();
+  await expect(page.locator('#map-wrap')).toBeHidden();
+  await page.waitForTimeout(1500);
+  expect(mapRequests).toEqual([]);
+
+  await page.locator('#view-toggle').click();
+  await expect(page.locator('#map-wrap')).toBeVisible();
+  await expect(page.locator('#map canvas')).toBeAttached();
+  expect(mapRequests.length).toBeGreaterThan(0);
+  await expect(page.getByRole('button', { name: 'List', exact: true })).toBeVisible();
+
+  // Back to the list.
+  await page.locator('#view-toggle').click();
+  await expect(page.locator('#map-wrap')).toBeHidden();
+
+  // A card's "Map" button opens the map on that shop.
+  await page.locator('.card[data-slug="foxtail-coffee-west-jackson"] .locate').click();
+  await expect(page.locator('#map-wrap')).toBeVisible();
+  await expect(page.locator('.maplibregl-popup')).toContainText('Foxtail Coffee');
 });

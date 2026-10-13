@@ -7,13 +7,13 @@
   --surface-2: #efece3;
   --border: #e3dfd4;
   --text: #1f1e1d;
-  --muted: #6b6862;
+  --muted: #5f5c56;
   --navy: #1f3a5f;
   --link: #3a6a96;
-  --green: #2f7d5b;
+  --green: #276b4d;
   --green-soft: #5ba37e;
   --green-tint: #e3efe7;
-  --amber: #a26a12;
+  --amber: #875709;
   --amber-tint: #f6ecd9;
   --gray-tint: #ebe8e1;
   --on-navy: #f7f5ef;
@@ -223,28 +223,37 @@ a:hover {
 
 /* Map markers & popups (rendered by MapLibre outside Astro's scoped styles) */
 .marker {
-  width: 18px;
-  height: 18px;
+  /* 24px tap target (accessibility minimum) around a smaller visible dot. */
+  position: relative;
+  width: 24px;
+  height: 24px;
   padding: 0;
-  border-radius: 50%;
-  border: 2.5px solid var(--surface);
-  background: #a8a49b;
-  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
+  border: 0;
+  background: none;
   cursor: pointer;
   transition: transform 0.15s;
 }
 
-.marker.charge {
+.marker::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  border: 2.5px solid var(--surface);
+  background: #a8a49b;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
+}
+
+.marker.charge::before {
   background: var(--green-soft);
 }
 
-.marker.wifi {
+.marker.wifi::before {
   background: var(--navy);
 }
 
-.marker.spot {
-  width: 20px;
-  height: 20px;
+.marker.spot::before {
+  inset: 2px;
   border-radius: 5px;
   background: var(--amber);
 }

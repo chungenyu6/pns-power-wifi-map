@@ -29,14 +29,16 @@ const questions = [
     questions.map(({ q, label }) => (
       <div class="vote" data-q={q} role="group" aria-label={`${label} at ${name}`}>
         <span class="vote-label">{label}</span>
-        <button type="button" data-v="up" aria-label={`Yes: ${label}`} aria-pressed="false">
+        <button type="button" data-v="up" aria-pressed="false">
           <Icon name="thumb" size={15} />
+          <span class="visually-hidden">Yes, votes:</span>
           <b>0</b>
         </button>
-        <button type="button" data-v="down" aria-label={`No: ${label}`} aria-pressed="false">
+        <button type="button" data-v="down" aria-pressed="false">
           <span class="flip">
             <Icon name="thumb" size={15} />
           </span>
+          <span class="visually-hidden">No, votes:</span>
           <b>0</b>
         </button>
       </div>

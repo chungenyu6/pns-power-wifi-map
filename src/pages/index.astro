@@ -114,7 +114,7 @@ const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'n
       <p class="add-cta muted">Know a spot we're missing? <a href={`${base}/add`}>Add a shop</a></p>
     </section>
 
-    <div class="map-wrap">
+    <div class="map-wrap" id="map-wrap">
       <div id="map" role="region" aria-label="Map of coffee shops"></div>
       <div class="legend" aria-hidden="true">
         <span><i class="charge"></i>Wi-Fi + outlets</span>
@@ -124,6 +124,10 @@ const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'n
       </div>
     </div>
   </div>
+
+  <button type="button" class="view-toggle" id="view-toggle" aria-controls="map-wrap" aria-expanded="false">
+    <span class="when-list">Map</span><span class="when-map">List</span>
+  </button>
 
   <script type="application/json" id="shops-data" set:html={JSON.stringify({ base, shops: views, spots })} />
   <script>
@@ -135,24 +139,55 @@ const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'n
     const data = JSON.parse(document.getElementById('shops-data')!.textContent!);
 
     // The list, filters and votes must work even if the map library fails to load,
-    // so the map is loaded on its own and plugged in when ready.
+    // so the map is loaded on its own and plugged in when ready. On phones it only loads
+    // when someone opens it: the map library is by far the heaviest thing on the page.
     let real: MapApi | null = null;
+    let loading: Promise<MapApi | null> | null = null;
     let lastShown: Set<string> | null = null;
+    const phone = matchMedia('(max-width: 760px)');
+    const toggle = document.getElementById('view-toggle')!;
+
+    function loadMap(): Promise<MapApi | null> {
+      loading ??= import('../scripts/map')
+        .then(({ initMap }) => {
+          real = initMap(data);
+          if (lastShown) real.show(lastShown);
+          return real;
+        })
+        .catch((err) => {
+          console.error('Map failed to load', err);
+          return null;
+        });
+      return loading;
+    }
+
+    function setMapOpen(open: boolean) {
+      document.body.classList.toggle('show-map', open);
+      toggle.setAttribute('aria-expanded', String(open));
+      if (open) loadMap().then((m) => m?.resize());
+    }
+    toggle.addEventListener('click', () => setMapOpen(!document.body.classList.contains('show-map')));
+
     const map: MapApi = {
       show(slugs) {
         lastShown = slugs;
         real?.show(slugs);
       },
       focus(slug) {
-        real?.focus(slug);
+        if (phone.matches) setMapOpen(true);
+        loadMap().then((m) => m?.focus(slug));
+      },
+      resize() {
+        real?.resize();
       },
     };
-    import('../scripts/map')
-      .then(({ initMap }) => {
-        real = initMap(data);
-        if (lastShown) real.show(lastShown);
-      })
-      .catch((err) => console.error('Map failed to load', err));
+    if (!phone.matches) loadMap();
+    phone.addEventListener('change', (e) => {
+      if (!e.matches) {
+        setMapOpen(false);
+        loadMap().then((m) => m?.resize());
+      }
+    });
 
     initFilters(map);
     applyCommunity();
@@ -444,25 +479,40 @@ const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'n
     background: #a8a49b;
   }
 
+  .view-toggle {
+    display: none;
+  }
+
+  /* Phones: list first; the map opens full-screen from a floating button and only loads then. */
   @media (max-width: 760px) {
     .layout {
       grid-template-columns: 1fr;
-      grid-template-rows: 42% 1fr;
     }
 
     .map-wrap {
-      grid-row: 1;
+      display: none;
+      position: fixed;
+      inset: var(--header-h) 0 0 0;
+      z-index: 10;
+      background: var(--bg);
+    }
+
+    :global(body.show-map) .map-wrap {
+      display: block;
     }
 
     .panel {
-      grid-row: 2;
       border-right: 0;
-      border-top: 1px solid var(--border);
       padding-top: 16px;
+      padding-bottom: 96px;
     }
 
-    .intro {
-      display: none;
+    .intro h1 {
+      font-size: 1.4rem;
+    }
+
+    .intro p {
+      margin-bottom: 12px;
     }
 
     .controls {
@@ -475,5 +525,36 @@ const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'n
       gap: 8px;
       font-size: 0.7rem;
     }
+
+    .view-toggle {
+      display: inline-flex;
+      position: fixed;
+      left: 50%;
+      bottom: calc(20px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      z-index: 15;
+      padding: 12px 26px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--navy);
+      color: var(--on-navy);
+      font: inherit;
+      font-weight: 600;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+    }
+
+    .when-map {
+      display: none;
+    }
+
+    :global(body.show-map) .when-map {
+      display: inline;
+    }
+
+    :global(body.show-map) .when-list {
+      display: none;
+    }
   }
+
 </style>
