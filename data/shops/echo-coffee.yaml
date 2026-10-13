@@ -17,7 +17,13 @@ sources:
     date: 2026-10-12
     note: Yelp listing shows Wi-Fi
     url: https://www.yelp.com/search?find_desc=Places+To+Study+Free+Wifi&find_loc=Pensacola%2C+FL
+  - type: visit
+    date: 2026-10-12
+    note: Local confirmed Wi-Fi and outlets
 summary: Not-for-profit coffee shop with free parking.
 wifi:
   available: yes
   password: unknown
+power:
+  outlets: some
+last_verified: 2026-10-12

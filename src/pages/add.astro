@@ -1,0 +1,189 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Add a shop" description="Tell us about a Pensacola coffee shop with Wi-Fi or outlets that isn't on the map yet.">
+  <article class="container">
+    <h1>Add a shop</h1>
+    <p class="lead muted">Know a coffee spot with Wi-Fi or outlets that we're missing? Tell us and we'll add it after a quick check.</p>
+
+    <form class="add-form" novalidate>
+      <label class="field">
+        <span>Shop name</span>
+        <input name="name" required maxlength="80" autocomplete="off" />
+      </label>
+      <label class="field">
+        <span>Address or cross streets</span>
+        <input name="address" required maxlength="120" autocomplete="off" placeholder="e.g. 9th Ave & Bayou Blvd" />
+      </label>
+
+      <fieldset>
+        <legend>Wi-Fi?</legend>
+        <div class="opts">
+          <label><input type="radio" name="wifi" value="yes" /><span>Yes</span></label>
+          <label><input type="radio" name="wifi" value="no" /><span>No</span></label>
+          <label><input type="radio" name="wifi" value="" checked /><span>Not sure</span></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Outlets?</legend>
+        <div class="opts">
+          <label><input type="radio" name="outlets" value="yes" /><span>Yes</span></label>
+          <label><input type="radio" name="outlets" value="no" /><span>No</span></label>
+          <label><input type="radio" name="outlets" value="" checked /><span>Not sure</span></label>
+        </div>
+      </fieldset>
+
+      <label class="field">
+        <span>Anything else? <em>(optional)</em></span>
+        <textarea name="notes" rows="3" maxlength="250" placeholder="Hours, Instagram, good tables, Wi-Fi password…"></textarea>
+      </label>
+      <label class="hp" aria-hidden="true">Website <input name="website" tabindex="-1" autocomplete="off" /></label>
+
+      <div class="actions">
+        <button class="btn" type="submit">Send</button>
+        <p class="form-msg" role="status" aria-live="polite"></p>
+      </div>
+    </form>
+  </article>
+</Base>
+
+<script>
+  import { submitReport } from '../lib/reports';
+
+  const form = document.querySelector<HTMLFormElement>('.add-form')!;
+  const msg = form.querySelector<HTMLElement>('.form-msg')!;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    if (data.get('website')) return; // honeypot
+    const val = (k: string) => String(data.get(k) ?? '').trim();
+    const name = val('name');
+    const address = val('address');
+    if (!name || !address) {
+      msg.textContent = 'Add the shop name and where it is.';
+      return;
+    }
+    const notes = val('notes');
+    // Stored as a pending report; the review script turns it into a shop file.
+    const comment = [`NEW SHOP: ${name}`, `Where: ${address}`, notes && `Notes: ${notes}`].filter(Boolean).join('\n');
+    const button = form.querySelector('button')!;
+    button.disabled = true;
+    msg.textContent = 'Sending…';
+    try {
+      await submitReport({
+        shop_slug: 'new-shop',
+        comment,
+        ...(val('wifi') && { wifi_works: val('wifi') === 'yes' }),
+        ...(val('outlets') && { outlets: val('outlets') === 'yes' ? 'some' : 'none' }),
+      });
+      msg.textContent = "Thanks! We'll check it out and add it to the map.";
+      form.reset();
+    } catch (err) {
+      msg.textContent = (err as Error).message;
+    } finally {
+      button.disabled = false;
+    }
+  });
+</script>
+
+<style>
+  .lead {
+    font-size: 1.05rem;
+    margin-bottom: 28px;
+  }
+
+  .add-form {
+    padding: 22px 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .field {
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  .field span,
+  legend {
+    display: block;
+    font-weight: 550;
+    margin-bottom: 6px;
+  }
+
+  .field em {
+    font-style: normal;
+    font-weight: 400;
+    color: var(--muted);
+  }
+
+  .field input,
+  .field textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+  }
+
+  fieldset {
+    border: 0;
+    margin: 0 0 16px;
+    padding: 0;
+  }
+
+  .opts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .opts input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .opts span {
+    display: inline-block;
+    padding: 7px 14px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  .opts input:checked + span {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: var(--on-navy);
+  }
+
+  .opts input:focus-visible + span {
+    outline: 2px solid var(--link);
+    outline-offset: 2px;
+  }
+
+  .hp {
+    position: absolute;
+    left: -9999px;
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .form-msg {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--green);
+  }
+</style>

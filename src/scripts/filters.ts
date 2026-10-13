@@ -1,5 +1,6 @@
 import { isOpenAt, nowInPensacola, parseHours, type Week } from '../lib/hours';
 import type { MapApi } from './map';
+import { localsSayYes, type Tallies } from './votes';
 
 type Filter = 'wifi' | 'outlets' | 'open' | 'laptop' | 'quiet';
 
@@ -28,12 +29,28 @@ export function initFilters(map: MapApi) {
     }
   }
 
+  // Filters count both our data and what locals vote.
+  const voted = new Map<HTMLElement, { wifi: boolean; outlets: boolean; laptop: boolean; quiet: boolean }>();
+  document.addEventListener('votes:changed', (e) => {
+    const tallies = (e as CustomEvent<Tallies>).detail;
+    for (const card of cards) {
+      const t = tallies.get(card.dataset.slug!);
+      voted.set(card, {
+        wifi: localsSayYes(t?.wifi),
+        outlets: localsSayYes(t?.outlets),
+        laptop: localsSayYes(t?.laptop),
+        quiet: localsSayYes(t?.quiet),
+      });
+    }
+    if (active.size > 0) apply();
+  });
+
   const tests: Record<Filter, (c: HTMLElement) => boolean> = {
-    wifi: (c) => c.dataset.wifi === 'yes',
-    outlets: (c) => ['some', 'many', 'few'].includes(c.dataset.outlets!),
+    wifi: (c) => c.dataset.wifi === 'yes' || !!voted.get(c)?.wifi,
+    outlets: (c) => ['some', 'many', 'few'].includes(c.dataset.outlets!) || !!voted.get(c)?.outlets,
     open: (c) => openNow.get(c) === true,
-    laptop: (c) => c.dataset.laptop === 'yes',
-    quiet: (c) => c.dataset.quiet === 'true',
+    laptop: (c) => c.dataset.laptop === 'yes' || !!voted.get(c)?.laptop,
+    quiet: (c) => c.dataset.quiet === 'true' || !!voted.get(c)?.quiet,
   };
 
   function apply() {

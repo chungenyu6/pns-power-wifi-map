@@ -1,5 +1,6 @@
 -- 850 Sip & Charge Map: community reports.
 -- Run once in the Supabase dashboard → SQL Editor. Safe to re-run.
+-- Then run every file in supabase/migrations/ in order.
 --
 -- Rules:
 --   * Anyone can submit a report (no account).

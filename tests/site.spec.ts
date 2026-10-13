@@ -2,6 +2,8 @@ import { expect, test } from '@playwright/test';
 
 test.describe('map page', () => {
   test.beforeEach(async ({ page }) => {
+    // Keep map tests independent of real votes in the database.
+    await page.route('**/rest/v1/reports**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
     await page.goto('./');
   });
 
@@ -85,10 +87,19 @@ test.describe('community reports', () => {
     { id: 2, created_at: new Date(Date.now() - 2 * 3600_000).toISOString(), shop_slug: 'foxtail-coffee-west-jackson', is_open: true, wifi_works: true, outlets: 'plenty', wifi_password: 'latte123', comment: 'Outlets along the back wall' },
   ];
 
+  let retracted: unknown[] = [];
+
   test.beforeEach(async ({ page }) => {
+    retracted = [];
     // Never touch the real database from tests.
+    await page.route('**/rest/v1/rpc/retract_vote', (route) => {
+      retracted.push(route.request().postDataJSON());
+      return route.fulfill({ status: 200, contentType: 'application/json', body: 'true' });
+    });
     await page.route('**/rest/v1/reports**', async (route) => {
-      if (route.request().method() === 'POST') return route.fulfill({ status: 201, body: '' });
+      if (route.request().method() === 'POST') {
+        return route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify([{ id: 99 }]) });
+      }
       return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(fake) });
     });
   });
@@ -107,15 +118,48 @@ test.describe('community reports', () => {
     await expect(vote.locator('[data-v="up"] b')).toHaveText('1'); // from the fake report
     const posted = page.waitForRequest((r) => r.method() === 'POST' && r.url().includes('/rest/v1/reports'));
     await vote.locator('[data-v="down"]').click();
-    expect((await posted).postDataJSON()).toEqual({ shop_slug: 'foxtail-coffee-west-jackson', wifi_works: false });
+    expect((await posted).postDataJSON()).toMatchObject({ shop_slug: 'foxtail-coffee-west-jackson', wifi_works: false });
     await expect(vote.locator('[data-v="down"]')).toHaveAttribute('aria-pressed', 'true');
     await expect(vote.locator('[data-v="down"] b')).toHaveText('1');
 
-    // Same answer again does nothing; the vote is remembered after reload.
-    await vote.locator('[data-v="down"]').click();
-    await expect(vote.locator('[data-v="down"] b')).toHaveText('1');
+    // Remembered after reload.
     await page.reload();
-    await expect(page.locator('.card[data-slug="foxtail-coffee-west-jackson"] .vote[data-q="wifi"] [data-v="down"]')).toHaveAttribute('aria-pressed', 'true');
+    const again = page.locator('.card[data-slug="foxtail-coffee-west-jackson"] .vote[data-q="wifi"]');
+    await expect(again.locator('[data-v="down"]')).toHaveAttribute('aria-pressed', 'true');
+
+    // Tapping the same button again takes the vote back on the server.
+    await again.locator('[data-v="down"]').click();
+    await expect(again.locator('[data-v="down"]')).toHaveAttribute('aria-pressed', 'false');
+    await expect.poll(() => retracted.length).toBe(1);
+    expect(retracted[0]).toMatchObject({ p_id: 99 });
+  });
+
+  test('switching from 👎 to 👍 withdraws the old vote', async ({ page }) => {
+    await page.goto('./shops/foxtail-coffee-west-jackson');
+    const vote = page.locator('.report .vote[data-q="quiet"]');
+    await vote.locator('[data-v="down"]').click();
+    await expect(vote.locator('[data-v="down"]')).toHaveAttribute('aria-pressed', 'true');
+    await vote.locator('[data-v="up"]').click();
+    await expect(vote.locator('[data-v="up"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(vote.locator('[data-v="down"] b')).toHaveText('0');
+    await expect.poll(() => retracted.length).toBe(1);
+  });
+
+  test('add-a-shop form sends a pending suggestion', async ({ page }) => {
+    await page.goto('./add');
+    await page.getByRole('button', { name: 'Send' }).click();
+    await expect(page.locator('.form-msg')).toHaveText('Add the shop name and where it is.');
+    await page.getByLabel('Shop name').fill('Test Beans');
+    await page.getByLabel('Address or cross streets').fill('9th Ave & Bayou');
+    await page.locator('label:has(input[name="wifi"][value="yes"])').click();
+    const posted = page.waitForRequest((r) => r.method() === 'POST' && r.url().includes('/rest/v1/reports'));
+    await page.getByRole('button', { name: 'Send' }).click();
+    expect((await posted).postDataJSON()).toEqual({
+      shop_slug: 'new-shop',
+      comment: 'NEW SHOP: Test Beans\nWhere: 9th Ave & Bayou',
+      wifi_works: true,
+    });
+    await expect(page.locator('.form-msg')).toContainText("We'll check it out");
   });
 
   test('shop page has an "open right now" vote; outlets vote maps to some/none', async ({ page }) => {
@@ -123,7 +167,7 @@ test.describe('community reports', () => {
     await expect(page.locator('.report .vote[data-q="open"]')).toBeVisible();
     const posted = page.waitForRequest((r) => r.method() === 'POST' && r.url().includes('/rest/v1/reports'));
     await page.locator('.report .vote[data-q="outlets"] [data-v="up"]').click();
-    expect((await posted).postDataJSON()).toEqual({ shop_slug: 'foxtail-coffee-west-jackson', outlets: 'some' });
+    expect((await posted).postDataJSON()).toMatchObject({ shop_slug: 'foxtail-coffee-west-jackson', outlets: 'some' });
   });
 
   test('tips are queued for review; empty tips are refused', async ({ page }) => {
@@ -139,4 +183,16 @@ test.describe('community reports', () => {
     await page.goto('./');
     await expect(page.locator('.card[data-slug="foxtail-coffee-west-jackson"] .live')).toContainText('Open · Wi-Fi works');
   });
+});
+
+test('before migration 002, parallel requests still fall back and show counts', async ({ page }) => {
+  const row = { id: 1, created_at: new Date().toISOString(), shop_slug: 'echo-coffee', is_open: null, wifi_works: true, outlets: null, wifi_password: null, comment: null };
+  await page.route('**/rest/v1/reports**', (route) =>
+    route.request().url().includes('laptop_ok')
+      ? route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ code: '42703', message: 'column reports.laptop_ok does not exist' }) })
+      : route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([row]) }),
+  );
+  await page.goto('./shops/echo-coffee');
+  await expect(page.locator('.report .vote[data-q="wifi"] [data-v="up"] b')).toHaveText('1');
+  await expect(page.locator('.feed-list')).toContainText('No tips yet');
 });

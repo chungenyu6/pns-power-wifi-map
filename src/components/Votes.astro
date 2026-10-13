@@ -1,5 +1,5 @@
 ---
-// One-tap 👍/👎 for "Wi-Fi here?" / "Outlets here?" (and optionally "Open right now?").
+// One-tap 👍/👎 votes. Tap again to take it back. Map cards: Wi-Fi + outlets; shop page adds open/working/quiet.
 // Counts and click handling come from src/scripts/votes.ts.
 import Icon from './Icon.astro';
 
@@ -14,6 +14,13 @@ const questions = [
   ...(withOpen ? [{ q: 'open', label: 'Open right now?' }] : []),
   { q: 'wifi', label: compact ? 'Wi-Fi' : 'Wi-Fi here?' },
   { q: 'outlets', label: compact ? 'Outlets' : 'Outlets here?' },
+  // Detail questions live on the shop page only, to keep map cards light.
+  ...(compact
+    ? []
+    : [
+        { q: 'laptop', label: 'Good for working?' },
+        { q: 'quiet', label: 'Quiet enough?' },
+      ]),
 ];
 ---
 
@@ -62,7 +69,7 @@ const questions = [
   }
 
   .votes:not(.compact) .vote-label {
-    min-width: 130px;
+    min-width: 152px;
     font-size: 0.95rem;
     font-weight: 550;
     color: var(--text);

@@ -14,19 +14,60 @@
    - 有留言 / 密碼的回報，審核前看不到 ✅
    - 匿名不能修改或刪除 ✅
 
+## 升級 002：可以收回投票 + 「適合工作 / 夠安靜」投票（2026-10-12）
+
+跟上面一樣，到 SQL Editor 貼上 [`supabase/migrations/002_votes_retract_laptop_quiet.sql`](../supabase/migrations/002_votes_retract_laptop_quiet.sql) 並按 Run。
+
+- **還沒跑之前**：網站照常運作，但投票不能收回，店家頁的「Good for working?」「Quiet enough?」也送不出去。
+- **跑完之後**：再按一次同一個按鈕就會收回；從 👎 改成 👍 時，舊的票會真的被刪掉。
+
+## 設定 secret key（審核腳本 + 新留言通知要用）
+
+Secret key 在 Supabase 後台 → **Project Settings → API Keys → Secret keys**（`sb_secret_` 開頭）。**不要貼在對話裡。**
+
+1. **本機審核腳本**：在專案資料夾裡建立 `.env`，把 key 貼在 `SUPABASE_SECRET_KEY=` 後面。
+   ```bash
+   cp .env.example .env
+   ```
+   `.env` 已經在 `.gitignore` 裡，不會被 commit。
+2. **GitHub 新留言通知**：在終端機執行下面這行，它會請你貼上 key（畫面不會顯示）。
+   ```bash
+   gh secret set SUPABASE_SECRET_KEY --repo chungenyu6/pns-power-wifi-map
+   ```
+
 ## 審核留言
 
 1. Supabase 後台 → **Table Editor** → `reports`。
 2. `status` 是 `pending` 的就是待審核：
    - 沒問題 → 改成 `approved`（網站上馬上看得到）
    - 垃圾 / 不當內容 → 改成 `rejected`
-3. 也可以直接跟 Claude 說「看一下新留言」（之後會做 `npm run reports` 審核腳本）。
+3. 或在終端機執行：
+   ```bash
+   npm run reports
+   ```
+   會列出所有待審項目（含「新增店家」的建議）和最近 7 天的投票，然後：
+   ```bash
+   npm run reports -- approve 12 13
+   ```
+   ```bash
+   npm run reports -- reject 14
+   ```
+4. 或直接跟 Claude 說「看一下新留言」。新增店家的建議，Claude 會查證後建成店家檔案。
+
+## 新留言通知
+
+`.github/workflows/reports-check.yml` 每 3 小時檢查一次：
+- 有待審項目 → 開一個標籤為 `review` 的 Issue（GitHub 會寄 email 給你）
+- 又多了新的 → 在同一個 Issue 留言（再寄一次 email）
+- 全部審完 → 自動關閉 Issue
+- 順便讓 Supabase 免費方案不會因為閒置被暫停
 
 ## 規則（寫在資料庫裡，瀏覽器改不了）
 
 | 回報內容 | 什麼時候公開 |
 |---|---|
-| 👍👎 投票（有開 / Wi-Fi / 插座） | 立刻（顯示成票數） |
+| 👍👎 投票（有開 / Wi-Fi / 插座 / 適合工作 / 安靜） | 立刻（顯示成票數） |
+| 新增店家建議（`shop_slug = new-shop`） | 不公開，審核後由 Claude 建成店家資料 |
 | 有文字留言或 Wi-Fi 密碼 | 你改成 `approved` 之後 |
 
 - 同一個 IP 10 分鐘內最多送 6 次（防洗版）。

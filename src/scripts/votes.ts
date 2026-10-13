@@ -1,105 +1,146 @@
-import { recentReports, submitReport, type NewReport, type Report } from '../lib/reports';
+import { recentReports, retractVote, submitVote, type NewReport, type Report, type VoteReceipt } from '../lib/reports';
 
-type Q = 'wifi' | 'outlets' | 'open';
-type Tally = { up: number; down: number };
+export type Q = 'wifi' | 'outlets' | 'open' | 'laptop' | 'quiet';
+export type Tally = { up: number; down: number };
+export type Tallies = Map<string, Record<Q, Tally>>;
+type Mine = { v: 'up' | 'down'; at: number; receipt: VoteReceipt };
 
-const WINDOW_DAYS: Record<Q, number> = { wifi: 30, outlets: 30, open: 0.25 }; // "open" only counts the last 6 hours
-const REVOTE_HOURS = 12;
+const QUESTIONS: Q[] = ['wifi', 'outlets', 'open', 'laptop', 'quiet'];
+// How far back each question counts. "Open right now" only means anything for a few hours.
+const WINDOW_DAYS: Record<Q, number> = { wifi: 30, outlets: 30, laptop: 30, quiet: 30, open: 0.25 };
+const REMEMBER_HOURS = 12;
 
 function voteOf(r: Report, q: Q): boolean | null {
-  if (q === 'wifi') return r.wifi_works;
-  if (q === 'open') return r.is_open;
-  return r.outlets === null ? null : r.outlets !== 'none';
+  switch (q) {
+    case 'wifi':
+      return r.wifi_works;
+    case 'open':
+      return r.is_open;
+    case 'outlets':
+      return r.outlets === null ? null : r.outlets !== 'none';
+    case 'laptop':
+      return r.laptop_ok ?? null;
+    case 'quiet':
+      return r.quiet ?? null;
+  }
 }
 
 function toReport(slug: string, q: Q, up: boolean): NewReport {
-  if (q === 'wifi') return { shop_slug: slug, wifi_works: up };
-  if (q === 'open') return { shop_slug: slug, is_open: up };
-  return { shop_slug: slug, outlets: up ? 'some' : 'none' };
+  switch (q) {
+    case 'wifi':
+      return { shop_slug: slug, wifi_works: up };
+    case 'open':
+      return { shop_slug: slug, is_open: up };
+    case 'outlets':
+      return { shop_slug: slug, outlets: up ? 'some' : 'none' };
+    case 'laptop':
+      return { shop_slug: slug, laptop_ok: up };
+    case 'quiet':
+      return { shop_slug: slug, quiet: up };
+  }
 }
 
-const storageKey = (slug: string, q: Q) => `vote:${slug}:${q}`;
+const key = (slug: string, q: Q) => `vote:${slug}:${q}`;
 
-function myVote(slug: string, q: Q): 'up' | 'down' | null {
+function loadMine(slug: string, q: Q): Mine | null {
   try {
-    const raw = localStorage.getItem(storageKey(slug, q));
+    const raw = localStorage.getItem(key(slug, q));
     if (!raw) return null;
-    const { v, at } = JSON.parse(raw);
-    return Date.now() - at < REVOTE_HOURS * 3_600_000 ? v : null;
+    const mine = JSON.parse(raw) as Mine;
+    return Date.now() - mine.at < REMEMBER_HOURS * 3_600_000 ? mine : null;
   } catch {
     return null;
   }
 }
 
-function remember(slug: string, q: Q, v: 'up' | 'down') {
+function saveMine(slug: string, q: Q, mine: Mine | null) {
   try {
-    localStorage.setItem(storageKey(slug, q), JSON.stringify({ v, at: Date.now() }));
+    if (mine) localStorage.setItem(key(slug, q), JSON.stringify(mine));
+    else localStorage.removeItem(key(slug, q));
   } catch {}
 }
 
-export function tally(reports: Report[], now = Date.now()) {
-  const out = new Map<string, Record<Q, Tally>>();
+const empty = (): Record<Q, Tally> =>
+  Object.fromEntries(QUESTIONS.map((q) => [q, { up: 0, down: 0 }])) as Record<Q, Tally>;
+
+export function tally(reports: Report[], now = Date.now()): Tallies {
+  const out: Tallies = new Map();
   for (const r of reports) {
-    const age = (now - new Date(r.created_at).getTime()) / 86_400_000;
-    for (const q of ['wifi', 'outlets', 'open'] as Q[]) {
+    const ageDays = (now - new Date(r.created_at).getTime()) / 86_400_000;
+    for (const q of QUESTIONS) {
       const v = voteOf(r, q);
-      if (v === null || age > WINDOW_DAYS[q]) continue;
-      if (!out.has(r.shop_slug)) out.set(r.shop_slug, { wifi: { up: 0, down: 0 }, outlets: { up: 0, down: 0 }, open: { up: 0, down: 0 } });
+      if (v === null || ageDays > WINDOW_DAYS[q]) continue;
+      if (!out.has(r.shop_slug)) out.set(r.shop_slug, empty());
       out.get(r.shop_slug)![q][v ? 'up' : 'down']++;
     }
   }
   return out;
 }
 
-export async function initVotes() {
+/** Locals agree: at least 2 votes and more yes than no. */
+export const localsSayYes = (t?: Tally) => !!t && t.up >= 2 && t.up > t.down;
+
+export async function initVotes(): Promise<Tallies> {
   const groups = [...document.querySelectorAll<HTMLElement>('.votes[data-slug]')];
-  if (groups.length === 0) return;
-
-  const paint = (el: HTMLElement, t: Tally | undefined, mine: 'up' | 'down' | null) => {
-    for (const v of ['up', 'down'] as const) {
-      const btn = el.querySelector<HTMLButtonElement>(`button[data-v="${v}"]`)!;
-      btn.querySelector('b')!.textContent = String(t?.[v] ?? 0);
-      btn.setAttribute('aria-pressed', String(mine === v));
-    }
-  };
-
-  let tallies = new Map<string, Record<Q, Tally>>();
+  let tallies: Tallies = new Map();
   try {
-    tallies = tally(await recentReports(WINDOW_DAYS.wifi * 24));
+    tallies = tally(await recentReports(30 * 24));
   } catch {
     // Counts stay at 0; voting still works if the server comes back.
   }
 
   for (const group of groups) {
     const slug = group.dataset.slug!;
+    if (!tallies.has(slug)) tallies.set(slug, empty());
+    const counts = tallies.get(slug)!;
+
     for (const el of group.querySelectorAll<HTMLElement>('.vote')) {
       const q = el.dataset.q as Q;
-      const t = tallies.get(slug)?.[q] ?? { up: 0, down: 0 };
-      paint(el, t, myVote(slug, q));
+      const t = counts[q];
+      const paint = (mine: Mine | null) => {
+        for (const v of ['up', 'down'] as const) {
+          const btn = el.querySelector<HTMLButtonElement>(`button[data-v="${v}"]`)!;
+          btn.querySelector('b')!.textContent = String(t[v]);
+          btn.setAttribute('aria-pressed', String(mine?.v === v));
+        }
+      };
+      paint(loadMine(slug, q));
 
+      let busy = false;
       el.addEventListener('click', async (e) => {
         const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-v]');
-        if (!btn) return;
+        if (!btn || busy) return;
+        busy = true;
         const v = btn.dataset.v as 'up' | 'down';
-        const prev = myVote(slug, q);
-        if (prev === v) return;
-        // Optimistic: move my vote, then send.
-        if (prev) t[prev] = Math.max(0, t[prev] - 1);
-        t[v]++;
-        remember(slug, q, v);
-        paint(el, t, v);
+        const prev = loadMine(slug, q);
+        const cancelling = prev?.v === v;
+
+        // Optimistic update first, so the tap feels instant.
+        if (prev) t[prev.v] = Math.max(0, t[prev.v] - 1);
+        if (!cancelling) t[v]++;
+        paint(cancelling ? null : { v, at: Date.now(), receipt: null });
+
         try {
-          await submitReport(toReport(slug, q, v === 'up'));
-          document.dispatchEvent(new CustomEvent('vote:sent', { detail: { slug, q, v } }));
+          if (prev?.receipt) await retractVote(prev.receipt);
+          if (cancelling) {
+            saveMine(slug, q, null);
+          } else {
+            const receipt = await submitVote(toReport(slug, q, v === 'up'));
+            saveMine(slug, q, { v, at: Date.now(), receipt });
+          }
         } catch {
-          t[v]--;
-          if (prev) t[prev]++;
-          try {
-            localStorage.removeItem(storageKey(slug, q));
-          } catch {}
-          paint(el, t, prev);
+          // Put things back the way they were.
+          if (!cancelling) t[v] = Math.max(0, t[v] - 1);
+          if (prev) t[prev.v]++;
+          paint(prev);
+        } finally {
+          busy = false;
+          document.dispatchEvent(new CustomEvent('votes:changed', { detail: tallies }));
         }
       });
     }
   }
+
+  document.dispatchEvent(new CustomEvent('votes:changed', { detail: tallies }));
+  return tallies;
 }

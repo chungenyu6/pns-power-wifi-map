@@ -111,7 +111,8 @@ const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'n
           ))
         }
       </ol>
-      <p class="empty muted" id="empty" hidden>No shops match these filters yet. Know one? Tell us on the shop page.</p>
+      <p class="empty muted" id="empty" hidden>No shops match these filters yet.</p>
+      <p class="add-cta muted">Know a spot we're missing? <a href={`${base}/add`}>Add a shop</a></p>
     </section>
 
     <div class="map-wrap">
@@ -306,6 +307,11 @@ const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'n
 
   .empty {
     padding: 24px 4px;
+  }
+
+  .add-cta {
+    margin: 18px 4px 0;
+    font-size: 0.9rem;
   }
 
   .relief {

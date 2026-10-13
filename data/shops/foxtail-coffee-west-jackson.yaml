@@ -17,7 +17,10 @@ sources:
     url: https://www.foxtailcoffee.com/locations/foxtail-coffee-west-jackson-st,-fl
   - type: visit
     date: 2026-10-12
-    note: Local confirmed there are outlets
+    note: Local confirmed Wi-Fi and outlets
 power:
   outlets: some
 last_verified: 2026-10-12
+wifi:
+  available: yes
+  password: unknown

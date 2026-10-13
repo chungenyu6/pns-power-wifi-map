@@ -20,8 +20,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const fullTitle = title ? `${title} · ${SITE}` : SITE;
 const path = Astro.url.pathname.replace(base, '') || '/';
 const nav = [
-  { href: '/', label: 'Map' },
-  { href: '/about', label: 'About' },
+  { href: '/', label: 'Map', long: '' },
+  { href: '/add', label: 'Add', long: ' a shop' },
+  { href: '/about', label: 'About', long: '' },
 ];
 ---
 
@@ -58,6 +59,7 @@ const nav = [
           nav.map((n) => (
             <a href={`${base}${n.href}`} aria-current={path === n.href ? 'page' : undefined}>
               {n.label}
+              {n.long && <span class="long">{n.long}</span>}
             </a>
           ))
         }
@@ -237,9 +239,23 @@ const nav = [
     height: calc(100dvh - var(--header-h));
   }
 
-  @media (max-width: 380px) {
+  @media (max-width: 520px) {
     .brand-name {
       font-size: 1rem;
+    }
+    nav a {
+      padding: 6px 7px;
+      font-size: 0.88rem;
+    }
+  }
+
+  nav a {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 520px) {
+    nav .long {
+      display: none;
     }
   }
 </style>

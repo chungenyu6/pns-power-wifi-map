@@ -1,0 +1,60 @@
+name: Check new reports
+
+# Opens/updates a GitHub issue when tips, passwords or new-shop suggestions are waiting for review.
+# GitHub emails you on new issues and comments. Also keeps the free Supabase project from pausing.
+on:
+  schedule:
+    - cron: '7 */3 * * *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: https://isncpzrcsohfolpsxmgm.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Count pending reports
+        id: count
+        run: |
+          if [ -z "$SUPABASE_SECRET_KEY" ]; then
+            echo "::warning::SUPABASE_SECRET_KEY secret is not set; skipping."
+            echo "n=skip" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          range=$(curl -sf -o /dev/null -D - "$SUPABASE_URL/rest/v1/reports?status=eq.pending&select=id" \
+            -H "apikey: $SUPABASE_SECRET_KEY" -H "Authorization: Bearer $SUPABASE_SECRET_KEY" \
+            -H "Prefer: count=exact" -H "Range: 0-0" | grep -i '^content-range' | tr -d '\r')
+          n="${range##*/}"
+          echo "Pending: $n"
+          echo "n=$n" >> "$GITHUB_OUTPUT"
+
+      - name: Update review issue
+        if: steps.count.outputs.n != 'skip'
+        env:
+          N: ${{ steps.count.outputs.n }}
+        run: |
+          gh label create review --color 2f7d5b --description "Community reports waiting for review" --force >/dev/null
+          issue=$(gh issue list --label review --state open --json number,body --jq '.[0]')
+          number=$(echo "$issue" | jq -r '.number // empty')
+          old=$(echo "$issue" | jq -r '.body // ""' | grep -o 'count:[0-9]*' | cut -d: -f2)
+          old=${old:-0}
+          body=$(printf '%s\n\n%s\n%s\n%s\n\n<!-- count:%s -->' \
+            "**$N** tip(s), Wi-Fi password(s) or new-shop suggestion(s) are waiting for review." \
+            "- Review locally: \`npm run reports\`, then \`npm run reports -- approve <id>\` / \`reject <id>\`" \
+            "- Or in Supabase: Table Editor → reports → set \`status\` to \`approved\` / \`rejected\`" \
+            "- Or ask Claude: \"look at the new reports\"" "$N")
+          if [ "$N" -gt 0 ] && [ -z "$number" ]; then
+            gh issue create --title "$N new report(s) to review" --label review --body "$body"
+          elif [ "$N" -gt 0 ] && [ "$N" -gt "$old" ]; then
+            gh issue edit "$number" --title "$N report(s) to review" --body "$body"
+            gh issue comment "$number" --body "$((N - old)) new since last check ($N waiting)."
+          elif [ "$N" -gt 0 ]; then
+            gh issue edit "$number" --title "$N report(s) to review" --body "$body"
+          elif [ -n "$number" ]; then
+            gh issue close "$number" --comment "All caught up 🎉"
+          fi
