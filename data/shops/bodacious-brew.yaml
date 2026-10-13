@@ -4,7 +4,9 @@ area: downtown
 address: 407 South Palafox Street, Pensacola, FL
 lat: 30.407852
 lng: -87.214404
-links: {}
+links:
+  facebook: https://www.facebook.com/bodaciousshops
+  instagram: https://www.instagram.com/bodaciousshops/
 sources:
   - type: osm
     date: 2026-10-12

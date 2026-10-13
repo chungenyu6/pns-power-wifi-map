@@ -11,6 +11,7 @@ wifi:
 hours: Mo-Fr 06:00-21:00; Sa 07:00-21:00; Su 08:00-21:00
 links:
   website: https://coffeeguycafe.com/
+  facebook: https://www.facebook.com/coffeeguycafe/
 sources:
   - type: osm
     date: 2026-10-12

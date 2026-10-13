@@ -1,0 +1,21 @@
+# Added by hand
+name: Starbucks
+chain: true
+area: downtown
+address: 501 E Gregory St, Pensacola, FL 32502
+lat: 30.417167
+lng: -87.203868
+wifi:
+  available: yes
+  password: none
+links:
+  website: https://www.starbucks.com/store-locator
+sources:
+  - type: official-site
+    date: 2026-10-12
+    note: Starbucks offers free Wi-Fi in its stores
+    url: https://www.starbucks.com/
+  - type: web
+    date: 2026-10-12
+    note: Address from store directories
+    url: https://www.yellowpages.com/pensacola-fl/starbucks

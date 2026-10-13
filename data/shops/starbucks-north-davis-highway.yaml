@@ -1,0 +1,21 @@
+# Added by hand
+name: Starbucks
+chain: true
+area: university
+address: 10015 N Davis Hwy, Pensacola, FL 32514
+lat: 30.540635
+lng: -87.197847
+wifi:
+  available: yes
+  password: none
+links:
+  website: https://www.starbucks.com/store-locator
+sources:
+  - type: official-site
+    date: 2026-10-12
+    note: Starbucks offers free Wi-Fi in its stores
+    url: https://www.starbucks.com/
+  - type: web
+    date: 2026-10-12
+    note: Address from store directories
+    url: https://www.yellowpages.com/pensacola-fl/starbucks

@@ -9,6 +9,8 @@ wifi:
   password: unknown
 links:
   website: https://mrsjonescoldbrew.com/
+  facebook: https://www.facebook.com/mrsjonescoldbrew
+  instagram: https://www.instagram.com/mrs.jones_coffee/
 sources:
   - type: osm
     date: 2026-10-12

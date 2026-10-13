@@ -1,0 +1,22 @@
+# Added by hand
+name: Starbucks (inside Target)
+chain: true
+area: westside
+address: 2950 S Blue Angel Pkwy, Pensacola, FL 32506
+lat: 30.361794
+lng: -87.356959
+wifi:
+  available: yes
+  password: none
+summary: Small cafe inside Target; limited seating.
+links:
+  website: https://www.starbucks.com/store-locator
+sources:
+  - type: official-site
+    date: 2026-10-12
+    note: Starbucks offers free Wi-Fi in its stores
+    url: https://www.starbucks.com/
+  - type: web
+    date: 2026-10-12
+    note: Address from store directories
+    url: https://www.yellowpages.com/pensacola-fl/starbucks

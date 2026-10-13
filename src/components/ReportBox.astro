@@ -1,0 +1,307 @@
+---
+// "Been here recently?" — quick taps + optional comment/password, and the live feed of approved reports.
+interface Props {
+  slug: string;
+}
+const { slug } = Astro.props;
+---
+
+<section class="report" aria-labelledby="report-h" data-slug={slug}>
+  <h2 id="report-h">Been here recently?</h2>
+  <p class="muted lead">Help the next person out. Taps show up right away; comments and passwords after a quick review.</p>
+
+  <form class="report-form" novalidate>
+    <fieldset>
+      <legend>Is it open right now?</legend>
+      <div class="opts">
+        <label><input type="radio" name="is_open" value="true" /><span>Open</span></label>
+        <label><input type="radio" name="is_open" value="false" /><span>Closed</span></label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Wi-Fi working?</legend>
+      <div class="opts">
+        <label><input type="radio" name="wifi_works" value="true" /><span>Works</span></label>
+        <label><input type="radio" name="wifi_works" value="false" /><span>Down / none</span></label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Outlets?</legend>
+      <div class="opts">
+        <label><input type="radio" name="outlets" value="plenty" /><span>Plenty</span></label>
+        <label><input type="radio" name="outlets" value="some" /><span>A few</span></label>
+        <label><input type="radio" name="outlets" value="none" /><span>None</span></label>
+      </div>
+    </fieldset>
+
+    <label class="field">
+      <span>Wi-Fi password <em>(optional)</em></span>
+      <input name="wifi_password" maxlength="64" autocomplete="off" autocapitalize="off" spellcheck="false" />
+    </label>
+    <label class="field">
+      <span>Anything else? <em>(optional)</em></span>
+      <textarea name="comment" rows="3" maxlength="500" placeholder="Outlets along the window bar, no laptops on weekends, packed after 3pm…"></textarea>
+    </label>
+    <!-- Bots fill every field; people never see this one. -->
+    <label class="hp" aria-hidden="true">Website <input name="website" tabindex="-1" autocomplete="off" /></label>
+
+    <div class="actions">
+      <button class="btn" type="submit">Send report</button>
+      <p class="form-msg" role="status" aria-live="polite"></p>
+    </div>
+  </form>
+
+  <div class="feed">
+    <h3>Recent reports</h3>
+    <ol class="feed-list" aria-live="polite"><li class="muted">Loading…</li></ol>
+  </div>
+</section>
+
+<script>
+  import { describe, reportsForShop, submitReport, timeAgo, type NewReport, type Report } from '../lib/reports';
+
+  const section = document.querySelector<HTMLElement>('.report[data-slug]')!;
+  const slug = section.dataset.slug!;
+  const form = section.querySelector<HTMLFormElement>('.report-form')!;
+  const msg = section.querySelector<HTMLElement>('.form-msg')!;
+  const list = section.querySelector<HTMLOListElement>('.feed-list')!;
+
+  function render(reports: Report[]) {
+    list.replaceChildren();
+    if (reports.length === 0) {
+      list.innerHTML = '<li class="muted">No reports yet. Be the first.</li>';
+      return;
+    }
+    for (const r of reports) {
+      const li = document.createElement('li');
+      const head = document.createElement('div');
+      head.className = 'feed-head';
+      const status = document.createElement('strong');
+      status.textContent = describe(r) || 'Comment';
+      const when = document.createElement('time');
+      when.dateTime = r.created_at;
+      when.textContent = timeAgo(r.created_at);
+      head.append(status, when);
+      li.append(head);
+      if (r.wifi_password) {
+        const p = document.createElement('p');
+        p.className = 'pw';
+        p.append('Wi-Fi password: ');
+        const code = document.createElement('code');
+        code.textContent = r.wifi_password;
+        p.append(code);
+        li.append(p);
+      }
+      if (r.comment) {
+        const p = document.createElement('p');
+        p.textContent = r.comment;
+        li.append(p);
+      }
+      list.append(li);
+    }
+    document.dispatchEvent(new CustomEvent('reports:loaded', { detail: reports }));
+  }
+
+  async function load() {
+    try {
+      render(await reportsForShop(slug));
+    } catch {
+      list.innerHTML = '<li class="muted">Reports are not available right now.</li>';
+    }
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    if (data.get('website')) return; // honeypot
+    const bool = (v: FormDataEntryValue | null) => (v === null ? undefined : v === 'true');
+    const text = (v: FormDataEntryValue | null) => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
+    const report: NewReport = {
+      shop_slug: slug,
+      is_open: bool(data.get('is_open')),
+      wifi_works: bool(data.get('wifi_works')),
+      outlets: (data.get('outlets') as NewReport['outlets']) ?? undefined,
+      wifi_password: text(data.get('wifi_password')),
+      comment: text(data.get('comment')),
+    };
+    const hasContent = Object.entries(report).some(([k, v]) => k !== 'shop_slug' && v !== undefined);
+    if (!hasContent) {
+      msg.textContent = 'Pick at least one answer or write a note.';
+      return;
+    }
+    const button = form.querySelector('button')!;
+    button.disabled = true;
+    msg.textContent = 'Sending…';
+    try {
+      await submitReport(JSON.parse(JSON.stringify(report)));
+      const needsReview = report.comment || report.wifi_password;
+      msg.textContent = needsReview ? 'Thanks! Your note will show up after a quick review.' : 'Thanks! Your report is live.';
+      form.reset();
+      load();
+    } catch (err) {
+      msg.textContent = (err as Error).message;
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  load();
+</script>
+
+<style>
+  .report {
+    margin-bottom: 36px;
+    padding: 22px 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .lead {
+    margin-bottom: 18px;
+  }
+
+  fieldset {
+    border: 0;
+    margin: 0 0 14px;
+    padding: 0;
+  }
+
+  legend {
+    font-weight: 550;
+    margin-bottom: 6px;
+  }
+
+  .opts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .opts input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .opts span {
+    display: inline-block;
+    padding: 7px 14px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  .opts input:checked + span {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: var(--on-navy);
+  }
+
+  .opts input:focus-visible + span {
+    outline: 2px solid var(--link);
+    outline-offset: 2px;
+  }
+
+  .field {
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .field span {
+    display: block;
+    font-weight: 550;
+    margin-bottom: 4px;
+  }
+
+  .field em {
+    font-style: normal;
+    font-weight: 400;
+    color: var(--muted);
+  }
+
+  .field input,
+  .field textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+  }
+
+  .hp {
+    position: absolute;
+    left: -9999px;
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .actions .btn:disabled {
+    opacity: 0.6;
+  }
+
+  .form-msg {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--green);
+  }
+
+  .feed {
+    margin-top: 26px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+  }
+
+  .feed h3 {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .feed-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .feed-list :global(li) {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.92rem;
+  }
+
+  .feed-list :global(li:last-child) {
+    border-bottom: 0;
+  }
+
+  .feed-list :global(.feed-head) {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .feed-list :global(time) {
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .feed-list :global(p) {
+    margin: 4px 0 0;
+  }
+
+  .feed-list :global(code) {
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    font-size: 0.9em;
+  }
+</style>

@@ -59,3 +59,44 @@ export function toView(s: Shop, now = new Date()): ShopView {
     tone: d.wifi.available === 'yes' && hasOutlets ? 'charge' : d.wifi.available === 'yes' ? 'wifi' : 'unknown',
   };
 }
+
+export type SpotView = {
+  slug: string;
+  name: string;
+  host?: string;
+  address: string;
+  lat: number;
+  lng: number;
+  details?: string;
+  kind: string[];
+  posted: string;
+  expires: string;
+  source: { name: string; url?: string };
+};
+
+const SPOT_DEFAULT_DAYS = 3;
+
+/** Temporary relief spots that haven't expired yet. */
+export async function getActiveSpots(now = new Date()): Promise<SpotView[]> {
+  const spots = await getCollection('spots');
+  return spots
+    .map((s) => {
+      const d = s.data;
+      const expires = d.until ?? new Date(d.posted.getTime() + SPOT_DEFAULT_DAYS * 86_400_000);
+      return {
+        slug: `spot-${s.id}`,
+        name: d.name,
+        host: d.host,
+        address: d.address,
+        lat: d.lat,
+        lng: d.lng,
+        details: d.details,
+        kind: d.kind,
+        posted: d.posted.toISOString(),
+        expires: expires.toISOString(),
+        source: d.source,
+      };
+    })
+    .filter((s) => new Date(s.expires) > now)
+    .sort((a, b) => b.posted.localeCompare(a.posted));
+}

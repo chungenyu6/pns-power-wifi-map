@@ -24,7 +24,13 @@ const shops = defineCollection({
         .object({
           available: triState.default('unknown'),
           password: z.enum(keys(WIFI_PASSWORD)).default('unknown'),
+          // The actual password, when a local reported it. Shown with the date it was reported.
+          password_value: z.string().max(64).optional(),
+          password_reported: z.coerce.date().optional(),
           notes: z.string().max(200).optional(),
+        })
+        .refine((w) => !w.password_value || w.password_reported, {
+          message: 'password_value needs password_reported (the date someone reported it)',
         })
         .default({ available: 'unknown', password: 'unknown' }),
       power: z
@@ -63,4 +69,24 @@ const shops = defineCollection({
     .strict(),
 });
 
-export const collections = { shops };
+// Temporary places with free Wi-Fi or charging, e.g. relief sites after a storm.
+// Hidden automatically once `until` has passed (or 3 days after `posted` if no end date is known).
+const spots = defineCollection({
+  loader: glob({ pattern: '*.yaml', base: './data/spots' }),
+  schema: z
+    .object({
+      name: z.string().min(1),
+      kind: z.array(z.enum(['wifi', 'charging', 'water', 'food', 'cooling'])).min(1),
+      host: z.string().optional(),
+      address: z.string().min(1),
+      lat: z.number().min(BOUNDS.south).max(BOUNDS.north),
+      lng: z.number().min(BOUNDS.west).max(BOUNDS.east),
+      details: z.string().max(300).optional(),
+      posted: z.coerce.date(),
+      until: z.coerce.date().optional(),
+      source: z.object({ name: z.string(), url: z.url().optional() }),
+    })
+    .strict(),
+});
+
+export const collections = { shops, spots };

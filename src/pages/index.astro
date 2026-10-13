@@ -2,11 +2,14 @@
 import Base from '../layouts/Base.astro';
 import Amenities from '../components/Amenities.astro';
 import FreshBadge from '../components/FreshBadge.astro';
-import { getShops, toView } from '../lib/shops';
+import { getActiveSpots, getShops, toView } from '../lib/shops';
 import { AREAS } from '../lib/meta';
 
 const shops = await getShops();
 const views = shops.map((s) => toView(s));
+const spots = await getActiveSpots();
+const fmtDay = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+const KIND: Record<string, string> = { wifi: 'Free Wi-Fi', charging: 'Charging', water: 'Water', food: 'Food', cooling: 'Cooling' };
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const usedAreas = Object.entries(AREAS).filter(([key]) => views.some((v) => v.area === key));
 const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/Chicago' });
@@ -42,6 +45,33 @@ const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'n
         <p class="count muted" aria-live="polite"><span id="count">{views.length}</span> shops · Updated {updated}</p>
       </div>
 
+      {
+        spots.length > 0 && (
+          <section class="relief" aria-labelledby="relief-h">
+            <h2 id="relief-h">Storm recovery: free Wi-Fi &amp; charging</h2>
+            <p class="muted">Temporary spots after Hurricane Isaias. Times change fast, so check the source.</p>
+            <ul>
+              {spots.map((s) => (
+                <li class="spot" data-slug={s.slug} data-expires={s.expires}>
+                  <div class="spot-head">
+                    <strong>{s.host ?? s.name}</strong>
+                    <button type="button" class="locate" aria-label={`Show ${s.host ?? s.name} on the map`}>
+                      Map
+                    </button>
+                  </div>
+                  <p class="spot-kinds">{s.kind.map((k) => KIND[k]).join(' · ')} · {s.name}</p>
+                  {s.details && <p class="spot-details">{s.details}</p>}
+                  <p class="spot-meta muted">
+                    {s.address.split(',')[0]} · Posted {fmtDay(s.posted)} ·{' '}
+                    {s.source.url ? <a href={s.source.url} rel="noopener" target="_blank">Source</a> : s.source.name}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+
       <ol class="list" id="list">
         {
           views.map((v) => (
@@ -66,6 +96,7 @@ const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'n
                 {AREAS[v.area as keyof typeof AREAS]} · {v.address.split(',')[0]}
               </p>
               <Amenities shop={v} />
+              <p class="live" hidden />
               <div class="card-foot">
                 <FreshBadge freshness={v.freshness} verified={shops.find((s) => s.id === v.slug)!.data.last_verified} />
                 <button type="button" class="locate" aria-label={`Show ${v.name} on the map`}>
@@ -85,17 +116,27 @@ const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'n
         <span><i class="charge"></i>Wi-Fi + outlets</span>
         <span><i class="wifi"></i>Wi-Fi</span>
         <span><i class="unknown"></i>Not confirmed</span>
+        {spots.length > 0 && <span><i class="relief-dot"></i>Relief spot</span>}
       </div>
     </div>
   </div>
 
-  <script type="application/json" id="shops-data" set:html={JSON.stringify({ base, shops: views })} />
+  <script type="application/json" id="shops-data" set:html={JSON.stringify({ base, shops: views, spots })} />
   <script>
     import { initMap } from '../scripts/map';
     import { initFilters } from '../scripts/filters';
+    import { showLiveReports } from '../scripts/live';
     const data = JSON.parse(document.getElementById('shops-data')!.textContent!);
     const map = initMap(data);
     initFilters(map);
+    showLiveReports();
+    // Relief spots expire on their own, even if the page was built earlier.
+    document.querySelectorAll<HTMLElement>('.spot').forEach((el) => {
+      if (new Date(el.dataset.expires!) < new Date()) el.remove();
+      el.querySelector('.locate')?.addEventListener('click', () => map.focus(el.dataset.slug!));
+    });
+    const relief = document.querySelector('.relief');
+    if (relief && !relief.querySelector('.spot')) relief.remove();
   </script>
 </Base>
 
@@ -259,6 +300,73 @@ const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'n
 
   .empty {
     padding: 24px 4px;
+  }
+
+  .relief {
+    margin: 4px 0 16px;
+    padding: 14px 14px 6px;
+    border-radius: var(--radius);
+    background: var(--amber-tint);
+    border: 1px solid color-mix(in srgb, var(--amber) 30%, transparent);
+  }
+
+  .relief h2 {
+    font-size: 1.02rem;
+    margin-bottom: 2px;
+  }
+
+  .relief > p {
+    font-size: 0.82rem;
+    margin-bottom: 8px;
+  }
+
+  .relief ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .spot {
+    padding: 10px 0;
+    border-top: 1px solid color-mix(in srgb, var(--amber) 25%, transparent);
+    font-size: 0.88rem;
+  }
+
+  .spot p {
+    margin: 2px 0 0;
+  }
+
+  .spot-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .spot-kinds {
+    color: var(--amber);
+    font-weight: 550;
+  }
+
+  .spot-meta {
+    font-size: 0.8rem;
+  }
+
+  .live {
+    margin: 10px 0 0;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: var(--surface-2);
+    font-size: 0.8rem;
+  }
+
+  .live:global(.is-open) {
+    background: var(--green-tint);
+    color: var(--green);
+  }
+
+  .legend .relief-dot {
+    background: var(--amber);
+    border-radius: 3px;
   }
 
   .map-wrap {

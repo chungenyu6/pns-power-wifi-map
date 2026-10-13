@@ -9,8 +9,15 @@ hours: Su-Th 06:00-18:00; Fr-Sa 06:00-20:00
 links:
   website: https://www.foxtailcoffee.com/locations/foxtail-coffee-west-jackson-st,-fl
   instagram: https://www.instagram.com/foxtailcoffeeco/
+  facebook: https://www.facebook.com/foxtailcoffeeco/
 sources:
   - type: official-site
     date: 2026-10-12
     note: Hours, seating
     url: https://www.foxtailcoffee.com/locations/foxtail-coffee-west-jackson-st,-fl
+  - type: visit
+    date: 2026-10-12
+    note: Local confirmed there are outlets
+power:
+  outlets: some
+last_verified: 2026-10-12

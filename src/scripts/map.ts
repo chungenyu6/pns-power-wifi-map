@@ -1,7 +1,7 @@
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
-import type { ShopView } from '../lib/shops';
+import type { ShopView, SpotView } from '../lib/shops';
 
 export type MapApi = {
   show(slugs: Set<string>): void;
@@ -39,7 +39,7 @@ function popupHtml(shop: ShopView, base: string): string {
 // Bundlers can't discover MapLibre's worker on their own; point it at the emitted file.
 maplibregl.setWorkerUrl(workerUrl);
 
-export function initMap({ base, shops }: { base: string; shops: ShopView[] }): MapApi {
+export function initMap({ base, shops, spots = [] }: { base: string; shops: ShopView[]; spots?: SpotView[] }): MapApi {
   const map = new maplibregl.Map({
     container: 'map',
     style: STYLE,
@@ -75,6 +75,23 @@ export function initMap({ base, shops }: { base: string; shops: ShopView[] }): M
     markers.set(shop.slug, marker);
   }
 
+  for (const spot of spots) {
+    if (new Date(spot.expires) < new Date()) continue;
+    const el = document.createElement('div');
+    el.className = 'marker-wrap';
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'marker spot';
+    dot.setAttribute('aria-label', `${spot.host ?? spot.name} (relief spot)`);
+    el.append(dot);
+    const html = `<div class="popup-title">${escape(spot.host ?? spot.name)}</div>
+      <div class="popup-meta spot-meta">${escape(spot.name)}</div>
+      ${spot.details ? `<div class="popup-addr">${escape(spot.details)}</div>` : ''}
+      <div class="popup-addr">${escape(spot.address.split(',')[0])}</div>`;
+    const popup = new maplibregl.Popup({ offset: 12, closeButton: false, maxWidth: '260px' }).setHTML(html);
+    markers.set(spot.slug, new maplibregl.Marker({ element: el }).setLngLat([spot.lng, spot.lat]).setPopup(popup).addTo(map));
+  }
+
   function highlight(slug: string, scrollList: boolean) {
     document.querySelectorAll('.card.active').forEach((c) => c.classList.remove('active'));
     document.querySelectorAll('.marker.active').forEach((m) => m.classList.remove('active'));
@@ -87,6 +104,7 @@ export function initMap({ base, shops }: { base: string; shops: ShopView[] }): M
   return {
     show(slugs) {
       for (const [slug, marker] of markers) {
+        if (slug.startsWith('spot-')) continue;
         marker.getElement().hidden = !slugs.has(slug);
         if (!slugs.has(slug)) marker.getPopup()?.remove();
       }

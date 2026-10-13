@@ -238,6 +238,17 @@ a:hover {
   background: var(--navy);
 }
 
+.marker.spot {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  background: var(--amber);
+}
+
+.popup-meta.spot-meta {
+  color: var(--amber);
+}
+
 .marker:hover,
 .marker.active {
   transform: scale(1.35);

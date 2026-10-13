@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import { FRESH_DAYS, STALE_DAYS } from '../lib/meta';
+import { FRESH_DAYS } from '../lib/meta';
 ---
 
 <Base title="About" description="How 850 Sip & Charge Map collects and checks its coffee shop Wi-Fi and outlet info.">
@@ -19,17 +19,16 @@ import { FRESH_DAYS, STALE_DAYS } from '../lib/meta';
     </ul>
 
     <h2>How fresh is it?</h2>
-    <p>Every shop shows when a person last confirmed its Wi-Fi and outlet details:</p>
+    <p>Every shop says when a local last confirmed its Wi-Fi and outlets:</p>
     <ul class="legend">
-      <li><span class="pill good"><span class="dot"></span>Verified</span> Confirmed in the last {FRESH_DAYS} days.</li>
-      <li><span class="pill warn"><span class="dot"></span>Getting old</span> {FRESH_DAYS}–{STALE_DAYS} days ago.</li>
-      <li><span class="pill"><span class="dot"></span>Needs a check</span> More than {STALE_DAYS} days ago.</li>
-      <li><span class="pill"><span class="dot"></span>Unverified</span> From a listing or guide, not yet confirmed by a local.</li>
+      <li><span class="pill good"><span class="dot"></span>Confirmed 3 days ago</span> Checked in the last {FRESH_DAYS} days.</li>
+      <li><span class="pill warn"><span class="dot"></span>Confirmed 2 months ago</span> Might have changed since.</li>
+      <li><span class="pill"><span class="dot"></span>Not confirmed yet</span> From a listing or guide only.</li>
     </ul>
 
     <h2>FAQ</h2>
     <h3>Do you list Wi-Fi passwords?</h3>
-    <p>No. We only say whether there is a password and how to get it (ask staff, on your receipt, posted in store). Shops change them, and it is their call to share.</p>
+    <p>Yes, when a local reports one. We show the date it was reported, since shops change them. If it doesn't work, ask the staff and let us know.</p>
 
     <h3>Is this official info from the shops?</h3>
     <p>No. It is a community project, not affiliated with any shop. Policies like "no laptops on weekends" change, so check in person.</p>
@@ -38,7 +37,7 @@ import { FRESH_DAYS, STALE_DAYS } from '../lib/meta';
     <p>We are just getting started in Pensacola. Drive-thru-only spots and places on base are left out on purpose. Everything else is fair game: tell us about it.</p>
 
     <h3>How do I report a change?</h3>
-    <p>A quick report form on every shop page is on the way. Until then, mention <strong>850 Sip &amp; Charge</strong> in a local Pensacola Facebook group.</p>
+    <p>Open the shop's page and use <strong>Been here recently?</strong> Quick taps (open, Wi-Fi working, outlets) show up right away. Written comments and Wi-Fi passwords appear after a quick review.</p>
 
     <h2>Credits</h2>
     <p>
@@ -82,6 +81,6 @@ import { FRESH_DAYS, STALE_DAYS } from '../lib/meta';
 
   .legend .pill {
     margin-right: 8px;
-    min-width: 118px;
+    min-width: 170px;
   }
 </style>

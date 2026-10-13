@@ -1,6 +1,6 @@
 # 850 Sip & Charge Map — 專案計畫書
 
-> 狀態：**規劃完成，等你說「go」開始實作** · 最後更新：2026-10-12
+> 狀態：**實作中**（進度見 PROGRESS.md）· 最後更新：2026-10-12
 > 進度追蹤：[PROGRESS.md](PROGRESS.md) · Repo：https://github.com/chungenyu6/pns-power-wifi-map
 
 ---
@@ -195,7 +195,7 @@ sources:
   - { type: site-report, date: 2026-10-05 }
 ```
 
-- **不公開 Wi-Fi 密碼**，只標「免密碼 / 問店員 / 印在收據上 / 店內有貼」，避免店家反感。
+- **可以公開 Wi-Fi 密碼**（2026-10-12 改為允許）：由在地人回報，經審核後顯示，並標示回報日期（`password_value` + `password_reported`）。
 - 格式錯誤 → build 直接失敗，壞資料不會上線。
 
 ---
@@ -308,3 +308,38 @@ Pensacola 市區與周邊：Downtown、East Hill、North Hill、Cordova Mall 一
 | 6 | GitHub repo | ✅ public repo `chungenyu6/pns-power-wifi-map`（已建立） |
 | 7 | 安裝原則 | ✅ 全部裝在專案資料夾，不需要 Python（§9） |
 | 8 | 自動化測試 | ✅ 優先用你電腦上已有的 Playwright 瀏覽器 |
+
+---
+
+## 14. 2026-10-12 第三輪更新
+
+### 背景：颶風 Isaias
+颶風 Isaias 在 10/9 登陸 Destin，Escambia / Santa Rosa 還有約 8 萬戶停電。現在大家最需要的就是「哪裡有電、有網路」，所以新增：
+
+- **颶風臨時據點**（`data/spots/*.yaml`）：例如 Spectrum 在 Hitzman Park、Bayview Park 的 Wi-Fi 和充電車。
+  - 地圖上用琥珀色方塊標示，清單最上方有「Storm recovery」區塊。
+  - 到 `until` 日期（沒有寫的話就是張貼後 3 天）會**自動隱藏**。
+- **店家卡片上顯示即時回報**：例如「Local report: Open · Wi-Fi works · 2h ago」，只顯示 48 小時內的回報。
+
+### 網站留言（取代去社團挖資料）
+- 快速按鈕（有開 / Wi-Fi 能用 / 插座）**立刻公開**；文字留言和 Wi-Fi 密碼**審核後**公開。
+- 設定步驟見 [SUPABASE.md](SUPABASE.md)。
+
+### 新鮮度標籤簡化成 3 種，直接寫日期
+| 標籤 | 意思 |
+|---|---|
+| 🟢 Confirmed 3 days ago | 30 天內有在地人確認 |
+| 🟡 Confirmed 2 months ago | 確認過，但比較久了 |
+| ⚪ Not confirmed yet | 只有網路資料 |
+
+### ⚠️ What's Happening Pensacola 社團規則
+社團規則第 3 條寫明：**不要把社團裡的任何內容分享到社團外**，也不要截圖其他成員的貼文。所以：
+- 不要把社團貼文原文或截圖搬到網站上。
+- 比較好的做法：**在社團裡宣傳網站，請大家直接到網站回報**（這也是你想要的方向）。
+- 你自己親眼看到、親自確認的資訊，用「In-person visit」當來源就沒問題。
+- 你的帳號目前沒加入這個社團，所以 Claude 透過 Chrome 也看不到貼文內容。
+
+### 店家清單調整
+- 移除 Dunkin（之後再說）。
+- Starbucks 收錄 Pensacola 全部能確認地址的店（目前 10 間；UWF 圖書館那間找不到精確座標，暫不收錄）。
+- 補上官網上找得到的 FB / IG 連結。

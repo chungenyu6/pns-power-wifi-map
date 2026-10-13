@@ -14,3 +14,4 @@ node/14054986160  # Seven Brew — drive-thru only
 way/354655670     # Coffee & Eye Guy — likely duplicate of Coffee Guy Cafe next door
 node/14107719479  # Dutch Bros — drive-thru only
 node/9027622497   # Drowsy Poet, Pace — outside Pensacola scope (Santa Rosa County)
+way/599054600     # Dunkin — left out for now (owner decision 2026-10-12)

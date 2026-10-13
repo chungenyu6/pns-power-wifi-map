@@ -3,6 +3,7 @@ import Base from '../../layouts/Base.astro';
 import Amenities from '../../components/Amenities.astro';
 import FreshBadge from '../../components/FreshBadge.astro';
 import Icon from '../../components/Icon.astro';
+import ReportBox from '../../components/ReportBox.astro';
 import { getShops, toView, type Shop } from '../../lib/shops';
 import { AREAS, NOISE, OUTLETS, SOURCE_TYPES, WIFI_PASSWORD } from '../../lib/meta';
 import { formatWeek, parseHours } from '../../lib/hours';
@@ -26,7 +27,14 @@ const rows = [
     icon: 'wifi' as const,
     label: 'Wi-Fi',
     value: d.wifi.available === 'yes' ? 'Yes' : d.wifi.available === 'no' ? 'No' : 'Not confirmed yet',
-    extra: [d.wifi.available === 'yes' && d.wifi.password !== 'unknown' ? WIFI_PASSWORD[d.wifi.password] : null, d.wifi.notes]
+    extra: [
+      d.wifi.password_value && d.wifi.password_reported
+        ? `Password: ${d.wifi.password_value} (reported ${fmtDate(d.wifi.password_reported)})`
+        : d.wifi.available === 'yes' && d.wifi.password !== 'unknown'
+          ? WIFI_PASSWORD[d.wifi.password]
+          : null,
+      d.wifi.notes,
+    ]
       .filter(Boolean)
       .join(' · '),
   },
@@ -121,13 +129,7 @@ const rows = [
       </section>
     </div>
 
-    <section class="report" aria-labelledby="report-h">
-      <h2 id="report-h">Been here recently?</h2>
-      <p class="muted">
-        Tell us if the Wi-Fi worked, where the outlets are, or if anything changed. A quick report form is coming soon.
-        Until then, mention <strong>850 Sip &amp; Charge</strong> in a local Pensacola Facebook group and we will pick it up.
-      </p>
-    </section>
+    <ReportBox slug={shop.id} />
 
     <section class="sources" aria-labelledby="sources-h">
       <h2 id="sources-h">Where this info comes from</h2>
@@ -280,15 +282,6 @@ const rows = [
     gap: 4px;
   }
 
-  .report {
-    padding: 20px;
-    border-radius: var(--radius);
-    background: var(--surface-2);
-  }
-
-  .report p {
-    margin: 0;
-  }
 
   .sources ul {
     margin: 0;
