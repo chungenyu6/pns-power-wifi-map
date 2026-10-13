@@ -179,9 +179,9 @@ test.describe('community reports', () => {
     await expect(page.locator('.form-msg')).toContainText('after a quick review');
   });
 
-  test('map cards show the latest local report', async ({ page }) => {
+  test('a recent open report shows in the card\'s open/closed spot', async ({ page }) => {
     await page.goto('./');
-    await expect(page.locator('.card[data-slug="foxtail-coffee-west-jackson"] .live')).toContainText('Open · Wi-Fi works');
+    await expect(page.locator('.card[data-slug="foxtail-coffee-west-jackson"] .open-state')).toHaveText('Reported open · 2h ago');
   });
 });
 
@@ -195,4 +195,41 @@ test('before migration 002, parallel requests still fall back and show counts', 
   await page.goto('./shops/echo-coffee');
   await expect(page.locator('.report .vote[data-q="wifi"] [data-v="up"] b')).toHaveText('1');
   await expect(page.locator('.feed-list')).toContainText('No tips yet');
+});
+
+test('votes upgrade unknown tags and refresh the freshness badge, everywhere', async ({ page }) => {
+  const now = Date.now();
+  const vote = (id: number, extra: object) => ({
+    id, created_at: new Date(now - id * 60_000).toISOString(), shop_slug: 'bodacious-brew',
+    is_open: null, wifi_works: null, outlets: null, laptop_ok: null, quiet: null, wifi_password: null, comment: null, ...extra,
+  });
+  const rows = [vote(1, { wifi_works: true }), vote(2, { wifi_works: true }), vote(3, { outlets: 'none' })];
+  await page.route('**/rest/v1/reports**', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(rows) }),
+  );
+
+  await page.goto('./');
+  const card = page.locator('.card[data-slug="bodacious-brew"]');
+  await expect(card.locator('li[data-attr="wifi"]')).toHaveText('Wi-Fi');
+  await expect(card.locator('li[data-attr="wifi"]')).toHaveClass(/good/);
+  await expect(card.locator('li[data-attr="outlets"]')).toHaveText('Outlets?'); // one 👎 isn't a verdict
+  await expect(card.locator('.fresh')).toHaveText('Confirmed today');
+  await expect(card.locator('.fresh')).toHaveClass(/good/);
+
+  await page.goto('./shops/bodacious-brew');
+  await expect(page.locator('.row[data-attr="wifi"] .row-value')).toHaveText("Yes (locals' votes)");
+  await expect(page.locator('.head-meta li[data-attr="wifi"]')).toHaveText('Wi-Fi');
+  await expect(page.locator('.facts .fresh')).toHaveText('Confirmed today');
+});
+
+test('list, filters and votes still work when the map library fails to load', async ({ page }) => {
+  await page.route('**/_astro/map.*.js', (route) => route.abort());
+  const rows = [
+    { id: 1, created_at: new Date().toISOString(), shop_slug: 'echo-coffee', is_open: null, wifi_works: true, outlets: null, laptop_ok: null, quiet: null, wifi_password: null, comment: null },
+  ];
+  await page.route('**/rest/v1/reports**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(rows) }));
+  await page.goto('./');
+  await expect(page.locator('.card[data-slug="echo-coffee"] .vote[data-q="wifi"] [data-v="up"] b')).toHaveText('1');
+  await page.getByPlaceholder('Search by name or street').fill('echo');
+  await expect(page.locator('.card:not([hidden])')).toHaveCount(1);
 });

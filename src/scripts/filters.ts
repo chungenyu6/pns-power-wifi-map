@@ -24,6 +24,7 @@ export function initFilters(map: MapApi) {
       const label = card.querySelector('.open-state')!;
       const open = week ? isOpenAt(week, day, minute) : false;
       openNow.set(card, open);
+      if (card.dataset.reported) continue; // a fresh local report owns the label
       label.textContent = week ? (open ? 'Open now' : 'Closed') : '';
       label.className = `open-state ${week ? (open ? 'is-open' : 'is-closed') : ''}`;
     }
@@ -48,7 +49,7 @@ export function initFilters(map: MapApi) {
   const tests: Record<Filter, (c: HTMLElement) => boolean> = {
     wifi: (c) => c.dataset.wifi === 'yes' || !!voted.get(c)?.wifi,
     outlets: (c) => ['some', 'many', 'few'].includes(c.dataset.outlets!) || !!voted.get(c)?.outlets,
-    open: (c) => openNow.get(c) === true,
+    open: (c) => (c.dataset.reported ? c.dataset.reported === 'open' : openNow.get(c) === true),
     laptop: (c) => c.dataset.laptop === 'yes' || !!voted.get(c)?.laptop,
     quiet: (c) => c.dataset.quiet === 'true' || !!voted.get(c)?.quiet,
   };

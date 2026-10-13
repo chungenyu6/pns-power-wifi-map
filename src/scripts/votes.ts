@@ -1,7 +1,9 @@
 import { recentReports, retractVote, submitVote, type NewReport, type Report, type VoteReceipt } from '../lib/reports';
+import { verdict } from '../lib/status';
 
 export type Q = 'wifi' | 'outlets' | 'open' | 'laptop' | 'quiet';
-export type Tally = { up: number; down: number };
+/** `last`: time of the newest vote (ms); `lastUp`: what that newest vote said. */
+export type Tally = { up: number; down: number; last?: number; lastUp?: boolean };
 export type Tallies = Map<string, Record<Q, Tally>>;
 type Mine = { v: 'up' | 'down'; at: number; receipt: VoteReceipt };
 
@@ -71,14 +73,20 @@ export function tally(reports: Report[], now = Date.now()): Tallies {
       const v = voteOf(r, q);
       if (v === null || ageDays > WINDOW_DAYS[q]) continue;
       if (!out.has(r.shop_slug)) out.set(r.shop_slug, empty());
-      out.get(r.shop_slug)![q][v ? 'up' : 'down']++;
+      const t = out.get(r.shop_slug)![q];
+      t[v ? 'up' : 'down']++;
+      const at = new Date(r.created_at).getTime();
+      if (!t.last || at > t.last) {
+        t.last = at;
+        t.lastUp = v;
+      }
     }
   }
   return out;
 }
 
 /** Locals agree: at least 2 votes and more yes than no. */
-export const localsSayYes = (t?: Tally) => !!t && t.up >= 2 && t.up > t.down;
+export const localsSayYes = (t?: Tally) => verdict(t) === 'yes';
 
 export async function initVotes(): Promise<Tallies> {
   const groups = [...document.querySelectorAll<HTMLElement>('.votes[data-slug]')];
@@ -117,7 +125,11 @@ export async function initVotes(): Promise<Tallies> {
 
         // Optimistic update first, so the tap feels instant.
         if (prev) t[prev.v] = Math.max(0, t[prev.v] - 1);
-        if (!cancelling) t[v]++;
+        if (!cancelling) {
+          t[v]++;
+          t.last = Date.now();
+          t.lastUp = v === 'up';
+        }
         paint(cancelling ? null : { v, at: Date.now(), receipt: null });
 
         try {

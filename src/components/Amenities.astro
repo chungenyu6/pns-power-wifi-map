@@ -1,32 +1,33 @@
 ---
+// Amenity pills. Rendered from our data; src/scripts/community.ts re-renders them once votes load.
 import Icon from './Icon.astro';
+import { pill, type Attr } from '../lib/status';
 import type { ShopView } from '../lib/shops';
 
 interface Props {
   shop: ShopView;
 }
 const { shop } = Astro.props;
-
-const wifi =
-  shop.wifi === 'yes'
-    ? { cls: 'good', text: shop.wifiFree ? 'Free Wi-Fi' : 'Wi-Fi' }
-    : shop.wifi === 'no'
-      ? { cls: 'bad', text: 'Wi-Fi' }
-      : { cls: '', text: 'Wi-Fi ?' };
-
-const outletText = { many: 'Plenty of outlets', some: 'Outlets', few: 'Few outlets', none: 'Outlets', unknown: 'Outlets ?' };
-const outlets = {
-  cls: shop.outlets === 'many' || shop.outlets === 'some' ? 'good' : shop.outlets === 'few' ? 'warn' : shop.outlets === 'none' ? 'bad' : '',
-  text: outletText[shop.outlets],
-};
+const items: { attr: Attr; icon: 'wifi' | 'plug' | 'laptop' | 'volume'; value: string }[] = [
+  { attr: 'wifi', icon: 'wifi', value: shop.wifi },
+  { attr: 'outlets', icon: 'plug', value: shop.outlets },
+  { attr: 'laptop', icon: 'laptop', value: shop.laptop },
+  { attr: 'noise', icon: 'volume', value: shop.noise },
+];
 ---
 
-<ul class="amenities" aria-label="Amenities">
-  <li class:list={['pill', wifi.cls]}><Icon name="wifi" />{wifi.text}</li>
-  <li class:list={['pill', outlets.cls]}><Icon name="plug" />{outlets.text}</li>
-  {shop.laptop === 'yes' && <li class="pill good"><Icon name="laptop" />Laptop-friendly</li>}
-  {shop.laptop === 'no' && <li class="pill bad"><Icon name="laptop" />Laptops</li>}
-  {shop.quiet && <li class="pill good"><Icon name="volume" />Quiet</li>}
+<ul class="amenities" aria-label="Amenities" data-slug={shop.slug} data-wifi-free={String(shop.wifiFree)}>
+  {
+    items.map(({ attr, icon, value }) => {
+      const p = pill(attr, value as never, { wifiFree: shop.wifiFree });
+      return (
+        <li class:list={['pill', p.tone]} data-attr={attr} data-base={value} hidden={p.hidden}>
+          <Icon name={icon} />
+          <span class="pill-text">{p.text}</span>
+        </li>
+      );
+    })
+  }
 </ul>
 
 <style>

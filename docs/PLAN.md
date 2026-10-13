@@ -343,3 +343,28 @@ Pensacola 市區與周邊：Downtown、East Hill、North Hill、Cordova Mall 一
 - 移除 Dunkin（之後再說）。
 - Starbucks 收錄 Pensacola 全部能確認地址的店（目前 10 間；UWF 圖書館那間找不到精確座標，暫不收錄）。
 - 補上官網上找得到的 FB / IG 連結。
+
+---
+
+## 15. 標籤統一規則（2026-10-12 第五輪）
+
+整個網站只用一套詞彙（程式在 `src/lib/status.ts`，網站產生頁面時和瀏覽器裡都用同一份）。
+
+### 設施標籤：每一項都只有 3 種狀態
+| 樣式 | 意思 | 例子 |
+|---|---|---|
+| 🟢 綠色 | 有（我們確認過，或在地人投票同意） | `Wi-Fi`、`Outlets`、`Good for working`、`Quiet` |
+| ⚪ 灰色加問號 | 還不知道 | `Wi-Fi?`、`Outlets?` |
+| 刪除線 | 沒有 | ~~`Wi-Fi`~~ |
+
+- 「Good for working」和「Quiet」**知道了才顯示**，免得卡片太擠。
+- **投票何時會改變標籤**：資料是「不知道」，而且**至少 2 票、其中一方比較多**時。我們自己確認過的資料優先，投票不會蓋掉它。
+
+### 新鮮度標籤：一種格式
+`Confirmed today / 3 days ago / 2 months ago / Not confirmed yet`，取「我們最後確認的日期」和「最新一張投票」裡比較新的那個。**在地人按一下 👍👎 就算確認一次。**
+
+### 營業狀態
+卡片右上角：6 小時內有人回報 →「Reported open · 2h ago」；沒有的話就照營業時間顯示「Open now / Closed」。原本另外一條「Local report」已經拿掉。
+
+### 名稱
+「Laptop-friendly」改成 **Good for working**：Yelp 用的就是這個說法，也和投票題目「Good for working?」一致。

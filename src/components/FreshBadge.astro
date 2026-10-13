@@ -1,21 +1,23 @@
 ---
-import { daysAgo, type Freshness } from '../lib/meta';
+// "Confirmed 3 days ago" — the one freshness tag. Community votes can refresh it in the browser.
+import { freshBadge } from '../lib/status';
 
 interface Props {
-  freshness: Freshness;
+  slug: string;
   verified?: Date;
 }
-const { freshness, verified } = Astro.props;
-const cls = { recent: 'good', old: 'warn', unverified: '' }[freshness];
-const label = verified ? `Confirmed ${daysAgo(verified)}` : 'Not confirmed yet';
-const title = verified
-  ? `A local confirmed these details on ${verified.toISOString().slice(0, 10)}`
-  : 'From listings and guides; no local has confirmed it yet';
+const { slug, verified } = Astro.props;
+const b = freshBadge(verified);
 ---
 
-<span class:list={['pill', 'fresh', cls]} title={title}>
+<span
+  class:list={['pill', 'fresh', b.tone]}
+  data-slug={slug}
+  data-verified={verified ? verified.toISOString() : ''}
+  title="When a local last confirmed the Wi-Fi and outlets"
+>
   <span class="dot"></span>
-  {label}
+  <span class="fresh-text">{b.text}</span>
 </span>
 
 <style>

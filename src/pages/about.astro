@@ -19,7 +19,7 @@ import { FRESH_DAYS } from '../lib/meta';
     </ul>
 
     <h2>How fresh is it?</h2>
-    <p>Every shop says when a local last confirmed its Wi-Fi and outlets:</p>
+    <p>Every shop says when a local last confirmed its Wi-Fi and outlets. A quick 👍 or 👎 on the map counts as a confirmation.</p>
     <ul class="legend">
       <li><span class="pill good"><span class="dot"></span>Confirmed 3 days ago</span> Checked in the last {FRESH_DAYS} days.</li>
       <li><span class="pill warn"><span class="dot"></span>Confirmed 2 months ago</span> Might have changed since.</li>
@@ -29,6 +29,14 @@ import { FRESH_DAYS } from '../lib/meta';
     <h2>FAQ</h2>
     <h3>Do you list Wi-Fi passwords?</h3>
     <p>Yes, when a local reports one. We show the date it was reported, since shops change them. If it doesn't work, ask the staff and let us know.</p>
+
+    <h3>What do the tags mean?</h3>
+    <ul class="legend">
+      <li><span class="pill good">Wi-Fi</span> Confirmed by us or by locals' votes.</li>
+      <li><span class="pill">Wi-Fi?</span> We don't know yet. Tap 👍 or 👎 to help.</li>
+      <li><span class="pill bad">Wi-Fi</span> Locals say there isn't any.</li>
+    </ul>
+    <p>Locals' votes count once at least two people agree.</p>
 
     <h3>Is this official info from the shops?</h3>
     <p>No. It is a community project, not affiliated with any shop. Policies like "no laptops on weekends" change, so check in person.</p>

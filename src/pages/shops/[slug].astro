@@ -24,6 +24,8 @@ const fmtDate = (date: Date) =>
 
 const rows = [
   {
+    attr: 'wifi',
+    base: d.wifi.available,
     icon: 'wifi' as const,
     label: 'Wi-Fi',
     value: d.wifi.available === 'yes' ? 'Yes' : d.wifi.available === 'no' ? 'No' : 'Not confirmed yet',
@@ -39,18 +41,24 @@ const rows = [
       .join(' · '),
   },
   {
+    attr: 'outlets',
+    base: d.power.outlets,
     icon: 'plug' as const,
     label: 'Outlets',
     value: d.power.outlets === 'unknown' ? 'Not confirmed yet' : OUTLETS[d.power.outlets],
     extra: d.power.notes ?? '',
   },
   {
+    attr: 'laptop',
+    base: d.laptop_friendly,
     icon: 'laptop' as const,
-    label: 'Laptops',
-    value: d.laptop_friendly === 'yes' ? 'Welcome' : d.laptop_friendly === 'no' ? 'Not encouraged' : 'Not confirmed yet',
+    label: 'Working',
+    value: d.laptop_friendly === 'yes' ? 'Good for working' : d.laptop_friendly === 'no' ? 'Not great for working' : 'Not confirmed yet',
     extra: d.laptop_policy ?? '',
   },
   {
+    attr: 'noise',
+    base: d.noise,
     icon: 'volume' as const,
     label: 'Noise',
     value: d.noise === 'unknown' ? 'Not confirmed yet' : NOISE[d.noise],
@@ -60,7 +68,7 @@ const rows = [
 ---
 
 <Base title={d.name} description={`Wi-Fi, outlets and laptop info for ${d.name} in ${AREAS[d.area]}, Pensacola.`}>
-  <article class="container">
+  <article class="container" data-shop={shop.id}>
     <a class="back" href={`${base}/`}><Icon name="arrow-left" /> All shops</a>
 
     <header class="head">
@@ -75,18 +83,18 @@ const rows = [
     <section class="facts" aria-labelledby="facts-h">
       <div class="section-head">
         <h2 id="facts-h">Work-friendliness</h2>
-        <FreshBadge freshness={view.freshness} verified={d.last_verified} />
+        <FreshBadge slug={shop.id} verified={d.last_verified} />
       </div>
       <dl>
         {
           rows.map((r) => (
-            <div class:list={['row', { unknown: r.value === 'Not confirmed yet' }]}>
+            <div class:list={['row', { unknown: r.value === 'Not confirmed yet' }]} data-attr={r.attr} data-base={r.base}>
               <dt>
                 <Icon name={r.icon} size={18} />
                 {r.label}
               </dt>
               <dd>
-                {r.value}
+                <span class="row-value">{r.value}</span>
                 {r.extra && <span class="extra">{r.extra}</span>}
               </dd>
             </div>

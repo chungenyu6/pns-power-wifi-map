@@ -43,6 +43,7 @@ const { slug } = Astro.props;
 <script>
   import { describe, reportsForShop, submitReport, timeAgo, type NewReport, type Report } from '../lib/reports';
   import { initVotes } from '../scripts/votes';
+  import { applyCommunity } from '../scripts/community';
 
   const section = document.querySelector<HTMLElement>('.report[data-slug]')!;
   const slug = section.dataset.slug!;
@@ -124,6 +125,7 @@ const { slug } = Astro.props;
   });
 
   load();
+  applyCommunity();
   initVotes();
 </script>
 

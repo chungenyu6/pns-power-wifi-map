@@ -16,6 +16,7 @@ export type ShopView = {
   wifiFree: boolean;
   outlets: 'many' | 'some' | 'few' | 'none' | 'unknown';
   laptop: 'yes' | 'no' | 'unknown';
+  noise: 'quiet' | 'moderate' | 'loud' | 'unknown';
   quiet: boolean;
   freshness: Freshness;
   /** Marker tone: has both Wi-Fi and outlets / Wi-Fi only / unknown. */
@@ -54,6 +55,7 @@ export function toView(s: Shop, now = new Date()): ShopView {
     wifiFree: d.wifi.available === 'yes' && d.wifi.password === 'none',
     outlets: d.power.outlets,
     laptop: d.laptop_friendly,
+    noise: d.noise,
     quiet: d.noise === 'quiet',
     freshness: freshness(d.last_verified, now),
     tone: d.wifi.available === 'yes' && hasOutlets ? 'charge' : d.wifi.available === 'yes' ? 'wifi' : 'unknown',

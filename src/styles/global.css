@@ -167,6 +167,10 @@ a:hover {
   white-space: nowrap;
 }
 
+.pill[hidden] {
+  display: none;
+}
+
 .pill svg {
   width: 14px;
   height: 14px;

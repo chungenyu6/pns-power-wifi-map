@@ -33,7 +33,7 @@ const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'n
           <button type="button" class="chip" data-filter="wifi" aria-pressed="false">Wi-Fi</button>
           <button type="button" class="chip" data-filter="outlets" aria-pressed="false">Outlets</button>
           <button type="button" class="chip" data-filter="open" aria-pressed="false">Open now</button>
-          <button type="button" class="chip" data-filter="laptop" aria-pressed="false">Laptop-friendly</button>
+          <button type="button" class="chip" data-filter="laptop" aria-pressed="false">Good for working</button>
           <button type="button" class="chip" data-filter="quiet" aria-pressed="false">Quiet</button>
           <label class="area">
             <span class="visually-hidden">Area</span>
@@ -100,9 +100,8 @@ const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'n
               <div class="card-votes">
                 <Votes slug={v.slug} name={v.name} compact />
               </div>
-              <p class="live" hidden />
               <div class="card-foot">
-                <FreshBadge freshness={v.freshness} verified={shops.find((s) => s.id === v.slug)!.data.last_verified} />
+                <FreshBadge slug={v.slug} verified={shops.find((s) => s.id === v.slug)!.data.last_verified} />
                 <button type="button" class="locate" aria-label={`Show ${v.name} on the map`}>
                   Map
                 </button>
@@ -128,15 +127,37 @@ const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'n
 
   <script type="application/json" id="shops-data" set:html={JSON.stringify({ base, shops: views, spots })} />
   <script>
-    import { initMap } from '../scripts/map';
     import { initFilters } from '../scripts/filters';
-    import { showLiveReports } from '../scripts/live';
     import { initVotes } from '../scripts/votes';
+    import { applyCommunity } from '../scripts/community';
+    import type { MapApi } from '../scripts/map';
+
     const data = JSON.parse(document.getElementById('shops-data')!.textContent!);
-    const map = initMap(data);
+
+    // The list, filters and votes must work even if the map library fails to load,
+    // so the map is loaded on its own and plugged in when ready.
+    let real: MapApi | null = null;
+    let lastShown: Set<string> | null = null;
+    const map: MapApi = {
+      show(slugs) {
+        lastShown = slugs;
+        real?.show(slugs);
+      },
+      focus(slug) {
+        real?.focus(slug);
+      },
+    };
+    import('../scripts/map')
+      .then(({ initMap }) => {
+        real = initMap(data);
+        if (lastShown) real.show(lastShown);
+      })
+      .catch((err) => console.error('Map failed to load', err));
+
     initFilters(map);
-    showLiveReports();
+    applyCommunity();
     initVotes();
+
     // Relief spots expire on their own, even if the page was built earlier.
     document.querySelectorAll<HTMLElement>('.spot').forEach((el) => {
       if (new Date(el.dataset.expires!) < new Date()) el.remove();
@@ -367,18 +388,6 @@ const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'n
     margin-top: 10px;
   }
 
-  .live {
-    margin: 10px 0 0;
-    padding: 6px 10px;
-    border-radius: 8px;
-    background: var(--surface-2);
-    font-size: 0.8rem;
-  }
-
-  .live:global(.is-open) {
-    background: var(--green-tint);
-    color: var(--green);
-  }
 
   .legend .relief-dot {
     background: var(--amber);
