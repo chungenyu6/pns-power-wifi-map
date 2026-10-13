@@ -1,0 +1,116 @@
+---
+// One-tap 👍/👎 for "Wi-Fi here?" / "Outlets here?" (and optionally "Open right now?").
+// Counts and click handling come from src/scripts/votes.ts.
+import Icon from './Icon.astro';
+
+interface Props {
+  slug: string;
+  name: string;
+  withOpen?: boolean;
+  compact?: boolean;
+}
+const { slug, name, withOpen = false, compact = false } = Astro.props;
+const questions = [
+  ...(withOpen ? [{ q: 'open', label: 'Open right now?' }] : []),
+  { q: 'wifi', label: compact ? 'Wi-Fi' : 'Wi-Fi here?' },
+  { q: 'outlets', label: compact ? 'Outlets' : 'Outlets here?' },
+];
+---
+
+<div class:list={['votes', { compact }]} data-slug={slug}>
+  {
+    questions.map(({ q, label }) => (
+      <div class="vote" data-q={q} role="group" aria-label={`${label} at ${name}`}>
+        <span class="vote-label">{label}</span>
+        <button type="button" data-v="up" aria-label={`Yes: ${label}`} aria-pressed="false">
+          <Icon name="thumb" size={15} />
+          <b>0</b>
+        </button>
+        <button type="button" data-v="down" aria-label={`No: ${label}`} aria-pressed="false">
+          <span class="flip">
+            <Icon name="thumb" size={15} />
+          </span>
+          <b>0</b>
+        </button>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .votes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+  }
+
+  .votes:not(.compact) {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .vote {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .vote-label {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-right: 2px;
+  }
+
+  .votes:not(.compact) .vote-label {
+    min-width: 130px;
+    font-size: 0.95rem;
+    font-weight: 550;
+    color: var(--text);
+  }
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 9px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+
+  .votes:not(.compact) button {
+    padding: 7px 14px;
+    font-size: 0.9rem;
+  }
+
+  button:hover {
+    color: var(--text);
+  }
+
+  button[data-v='up'][aria-pressed='true'] {
+    background: var(--green-tint);
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  button[data-v='down'][aria-pressed='true'] {
+    background: var(--surface-2);
+    border-color: var(--muted);
+    color: var(--text);
+  }
+
+  b {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .flip {
+    display: inline-flex;
+    transform: rotate(180deg);
+  }
+</style>

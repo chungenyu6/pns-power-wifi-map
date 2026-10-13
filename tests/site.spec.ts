@@ -101,25 +101,37 @@ test.describe('community reports', () => {
     await expect(feed).toContainText('Outlets along the back wall');
   });
 
-  test('quick-tap report goes live', async ({ page }) => {
-    await page.goto('./shops/foxtail-coffee-west-jackson');
-    let posted: Record<string, unknown> | undefined;
-    page.on('request', (r) => {
-      if (r.method() === 'POST' && r.url().includes('/rest/v1/reports')) posted = r.postDataJSON();
-    });
-    await page.getByText('Open', { exact: true }).click();
-    await page.getByText('Works', { exact: true }).click();
-    await page.getByRole('button', { name: 'Send report' }).click();
-    await expect(page.locator('.form-msg')).toHaveText('Thanks! Your report is live.');
-    expect(posted).toEqual({ shop_slug: 'foxtail-coffee-west-jackson', is_open: true, wifi_works: true });
+  test('one-tap vote on a map card is sent and counted', async ({ page }) => {
+    await page.goto('./');
+    const vote = page.locator('.card[data-slug="foxtail-coffee-west-jackson"] .vote[data-q="wifi"]');
+    await expect(vote.locator('[data-v="up"] b')).toHaveText('1'); // from the fake report
+    const posted = page.waitForRequest((r) => r.method() === 'POST' && r.url().includes('/rest/v1/reports'));
+    await vote.locator('[data-v="down"]').click();
+    expect((await posted).postDataJSON()).toEqual({ shop_slug: 'foxtail-coffee-west-jackson', wifi_works: false });
+    await expect(vote.locator('[data-v="down"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(vote.locator('[data-v="down"] b')).toHaveText('1');
+
+    // Same answer again does nothing; the vote is remembered after reload.
+    await vote.locator('[data-v="down"]').click();
+    await expect(vote.locator('[data-v="down"] b')).toHaveText('1');
+    await page.reload();
+    await expect(page.locator('.card[data-slug="foxtail-coffee-west-jackson"] .vote[data-q="wifi"] [data-v="down"]')).toHaveAttribute('aria-pressed', 'true');
   });
 
-  test('comments are queued for review; empty reports are refused', async ({ page }) => {
+  test('shop page has an "open right now" vote; outlets vote maps to some/none', async ({ page }) => {
     await page.goto('./shops/foxtail-coffee-west-jackson');
-    await page.getByRole('button', { name: 'Send report' }).click();
-    await expect(page.locator('.form-msg')).toHaveText('Pick at least one answer or write a note.');
+    await expect(page.locator('.report .vote[data-q="open"]')).toBeVisible();
+    const posted = page.waitForRequest((r) => r.method() === 'POST' && r.url().includes('/rest/v1/reports'));
+    await page.locator('.report .vote[data-q="outlets"] [data-v="up"]').click();
+    expect((await posted).postDataJSON()).toEqual({ shop_slug: 'foxtail-coffee-west-jackson', outlets: 'some' });
+  });
+
+  test('tips are queued for review; empty tips are refused', async ({ page }) => {
+    await page.goto('./shops/foxtail-coffee-west-jackson');
+    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await expect(page.locator('.form-msg')).toHaveText('Add a password or a tip first.');
     await page.getByLabel('Anything else?').fill('Quiet in the mornings');
-    await page.getByRole('button', { name: 'Send report' }).click();
+    await page.getByRole('button', { name: 'Send', exact: true }).click();
     await expect(page.locator('.form-msg')).toContainText('after a quick review');
   });
 

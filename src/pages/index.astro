@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import Amenities from '../components/Amenities.astro';
 import FreshBadge from '../components/FreshBadge.astro';
+import Votes from '../components/Votes.astro';
 import { getActiveSpots, getShops, toView } from '../lib/shops';
 import { AREAS } from '../lib/meta';
 
@@ -96,6 +97,9 @@ const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'n
                 {AREAS[v.area as keyof typeof AREAS]} · {v.address.split(',')[0]}
               </p>
               <Amenities shop={v} />
+              <div class="card-votes">
+                <Votes slug={v.slug} name={v.name} compact />
+              </div>
               <p class="live" hidden />
               <div class="card-foot">
                 <FreshBadge freshness={v.freshness} verified={shops.find((s) => s.id === v.slug)!.data.last_verified} />
@@ -126,10 +130,12 @@ const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'n
     import { initMap } from '../scripts/map';
     import { initFilters } from '../scripts/filters';
     import { showLiveReports } from '../scripts/live';
+    import { initVotes } from '../scripts/votes';
     const data = JSON.parse(document.getElementById('shops-data')!.textContent!);
     const map = initMap(data);
     initFilters(map);
     showLiveReports();
+    initVotes();
     // Relief spots expire on their own, even if the page was built earlier.
     document.querySelectorAll<HTMLElement>('.spot').forEach((el) => {
       if (new Date(el.dataset.expires!) < new Date()) el.remove();
@@ -349,6 +355,10 @@ const updated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'n
 
   .spot-meta {
     font-size: 0.8rem;
+  }
+
+  .card-votes {
+    margin-top: 10px;
   }
 
   .live {

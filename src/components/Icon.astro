@@ -1,11 +1,12 @@
 ---
 // Minimal stroke icons (24px grid), drawn to match the logo.
 interface Props {
-  name: 'wifi' | 'plug' | 'laptop' | 'clock' | 'volume' | 'pin' | 'external' | 'sun' | 'moon' | 'arrow-left';
+  name: 'thumb' | 'wifi' | 'plug' | 'laptop' | 'clock' | 'volume' | 'pin' | 'external' | 'sun' | 'moon' | 'arrow-left';
   size?: number;
 }
 const { name, size = 16 } = Astro.props;
 const paths: Record<Props['name'], string> = {
+  thumb: 'M7 10.5v10H3.5v-10zM7 10.5l3.6-7.2a2 2 0 0 1 2.9 1.9l-.6 4.3h5.6a2 2 0 0 1 2 2.4l-1.5 7a2 2 0 0 1-2 1.6H7',
   wifi: 'M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.8 16a5 5 0 0 1 6.4 0M12 19.5h.01',
   plug: 'M9 2.5v5M15 2.5v5M6.5 7.5h11v3.5a5.5 5.5 0 0 1-11 0zM12 16.5v5',
   laptop: 'M4.5 5.5h15v10h-15zM2.5 18.5h19',

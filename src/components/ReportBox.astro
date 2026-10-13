@@ -1,5 +1,7 @@
 ---
-// "Been here recently?" — quick taps + optional comment/password, and the live feed of approved reports.
+// "Been here recently?" — one-tap votes, optional comment/password, and the feed of approved notes.
+import Votes from './Votes.astro';
+
 interface Props {
   slug: string;
 }
@@ -8,31 +10,12 @@ const { slug } = Astro.props;
 
 <section class="report" aria-labelledby="report-h" data-slug={slug}>
   <h2 id="report-h">Been here recently?</h2>
-  <p class="muted lead">Help the next person out. Taps show up right away; comments and passwords after a quick review.</p>
+  <p class="muted lead">One tap helps the next person. Counts cover the last 30 days.</p>
+
+  <Votes slug={slug} name="this shop" withOpen />
 
   <form class="report-form" novalidate>
-    <fieldset>
-      <legend>Is it open right now?</legend>
-      <div class="opts">
-        <label><input type="radio" name="is_open" value="true" /><span>Open</span></label>
-        <label><input type="radio" name="is_open" value="false" /><span>Closed</span></label>
-      </div>
-    </fieldset>
-    <fieldset>
-      <legend>Wi-Fi working?</legend>
-      <div class="opts">
-        <label><input type="radio" name="wifi_works" value="true" /><span>Works</span></label>
-        <label><input type="radio" name="wifi_works" value="false" /><span>Down / none</span></label>
-      </div>
-    </fieldset>
-    <fieldset>
-      <legend>Outlets?</legend>
-      <div class="opts">
-        <label><input type="radio" name="outlets" value="plenty" /><span>Plenty</span></label>
-        <label><input type="radio" name="outlets" value="some" /><span>A few</span></label>
-        <label><input type="radio" name="outlets" value="none" /><span>None</span></label>
-      </div>
-    </fieldset>
+    <p class="form-intro">Know the Wi-Fi password or have a tip? <span class="muted">Shows up after a quick review.</span></p>
 
     <label class="field">
       <span>Wi-Fi password <em>(optional)</em></span>
@@ -46,19 +29,20 @@ const { slug } = Astro.props;
     <label class="hp" aria-hidden="true">Website <input name="website" tabindex="-1" autocomplete="off" /></label>
 
     <div class="actions">
-      <button class="btn" type="submit">Send report</button>
+      <button class="btn" type="submit">Send</button>
       <p class="form-msg" role="status" aria-live="polite"></p>
     </div>
   </form>
 
   <div class="feed">
-    <h3>Recent reports</h3>
+    <h3>Tips from locals</h3>
     <ol class="feed-list" aria-live="polite"><li class="muted">Loading…</li></ol>
   </div>
 </section>
 
 <script>
   import { describe, reportsForShop, submitReport, timeAgo, type NewReport, type Report } from '../lib/reports';
+  import { initVotes } from '../scripts/votes';
 
   const section = document.querySelector<HTMLElement>('.report[data-slug]')!;
   const slug = section.dataset.slug!;
@@ -66,10 +50,12 @@ const { slug } = Astro.props;
   const msg = section.querySelector<HTMLElement>('.form-msg')!;
   const list = section.querySelector<HTMLOListElement>('.feed-list')!;
 
-  function render(reports: Report[]) {
+  function render(all: Report[]) {
+    // Votes are summed up in the buttons above; the feed is for written tips and passwords.
+    const reports = all.filter((r) => r.comment || r.wifi_password);
     list.replaceChildren();
     if (reports.length === 0) {
-      list.innerHTML = '<li class="muted">No reports yet. Be the first.</li>';
+      list.innerHTML = '<li class="muted">No tips yet.</li>';
       return;
     }
     for (const r of reports) {
@@ -77,7 +63,7 @@ const { slug } = Astro.props;
       const head = document.createElement('div');
       head.className = 'feed-head';
       const status = document.createElement('strong');
-      status.textContent = describe(r) || 'Comment';
+      status.textContent = describe(r) || 'Tip';
       const when = document.createElement('time');
       when.dateTime = r.created_at;
       when.textContent = timeAgo(r.created_at);
@@ -99,7 +85,6 @@ const { slug } = Astro.props;
       }
       list.append(li);
     }
-    document.dispatchEvent(new CustomEvent('reports:loaded', { detail: reports }));
   }
 
   async function load() {
@@ -114,19 +99,14 @@ const { slug } = Astro.props;
     e.preventDefault();
     const data = new FormData(form);
     if (data.get('website')) return; // honeypot
-    const bool = (v: FormDataEntryValue | null) => (v === null ? undefined : v === 'true');
     const text = (v: FormDataEntryValue | null) => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
     const report: NewReport = {
       shop_slug: slug,
-      is_open: bool(data.get('is_open')),
-      wifi_works: bool(data.get('wifi_works')),
-      outlets: (data.get('outlets') as NewReport['outlets']) ?? undefined,
       wifi_password: text(data.get('wifi_password')),
       comment: text(data.get('comment')),
     };
-    const hasContent = Object.entries(report).some(([k, v]) => k !== 'shop_slug' && v !== undefined);
-    if (!hasContent) {
-      msg.textContent = 'Pick at least one answer or write a note.';
+    if (!report.comment && !report.wifi_password) {
+      msg.textContent = 'Add a password or a tip first.';
       return;
     }
     const button = form.querySelector('button')!;
@@ -134,10 +114,8 @@ const { slug } = Astro.props;
     msg.textContent = 'Sending…';
     try {
       await submitReport(JSON.parse(JSON.stringify(report)));
-      const needsReview = report.comment || report.wifi_password;
-      msg.textContent = needsReview ? 'Thanks! Your note will show up after a quick review.' : 'Thanks! Your report is live.';
+      msg.textContent = 'Thanks! It will show up after a quick review.';
       form.reset();
-      load();
     } catch (err) {
       msg.textContent = (err as Error).message;
     } finally {
@@ -146,6 +124,7 @@ const { slug } = Astro.props;
   });
 
   load();
+  initVotes();
 </script>
 
 <style>
@@ -161,48 +140,20 @@ const { slug } = Astro.props;
     margin-bottom: 18px;
   }
 
-  fieldset {
-    border: 0;
-    margin: 0 0 14px;
-    padding: 0;
+
+  .report-form {
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
   }
 
-  legend {
+  .form-intro {
     font-weight: 550;
-    margin-bottom: 6px;
+    margin-bottom: 12px;
   }
 
-  .opts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .opts input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .opts span {
-    display: inline-block;
-    padding: 7px 14px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--bg);
-    font-size: 0.9rem;
-    cursor: pointer;
-  }
-
-  .opts input:checked + span {
-    background: var(--navy);
-    border-color: var(--navy);
-    color: var(--on-navy);
-  }
-
-  .opts input:focus-visible + span {
-    outline: 2px solid var(--link);
-    outline-offset: 2px;
+  .form-intro span {
+    font-weight: 400;
   }
 
   .field {
