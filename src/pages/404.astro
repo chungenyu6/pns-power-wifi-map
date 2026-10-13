@@ -1,0 +1,14 @@
+---
+import Base from '../layouts/Base.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base title="Page not found" description="This page doesn't exist. Head back to the map of Pensacola coffee shops.">
+  <article class="container prose">
+    <h1>That page isn't here</h1>
+    <p class="lead">The shop may have moved, closed, or the link has a typo.</p>
+    <p><a class="btn" href={`${base}/`}>Back to the map</a></p>
+    <p class="muted">Looking for a shop we don't have yet? <a href={`${base}/add`}>Add a shop</a></p>
+  </article>
+</Base>

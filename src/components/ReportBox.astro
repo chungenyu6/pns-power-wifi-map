@@ -49,6 +49,10 @@ const { slug } = Astro.props;
   const slug = section.dataset.slug!;
   const form = section.querySelector<HTMLFormElement>('.report-form')!;
   const msg = section.querySelector<HTMLElement>('.form-msg')!;
+  const say = (text: string, error = false) => {
+    msg.textContent = text;
+    msg.classList.toggle('error', error);
+  };
   const list = section.querySelector<HTMLOListElement>('.feed-list')!;
 
   function render(all: Report[]) {
@@ -107,18 +111,18 @@ const { slug } = Astro.props;
       comment: text(data.get('comment')),
     };
     if (!report.comment && !report.wifi_password) {
-      msg.textContent = 'Add a password or a tip first.';
+      say('Add a password or a tip first.', true);
       return;
     }
     const button = form.querySelector('button')!;
     button.disabled = true;
-    msg.textContent = 'Sending…';
+    say('Sending…');
     try {
       await submitReport(JSON.parse(JSON.stringify(report)));
-      msg.textContent = 'Thanks! It will show up after a quick review.';
+      say('Thanks! It will show up after a quick review.');
       form.reset();
     } catch (err) {
-      msg.textContent = (err as Error).message;
+      say((err as Error).message, true);
     } finally {
       button.disabled = false;
     }
@@ -206,6 +210,10 @@ const { slug } = Astro.props;
     margin: 0;
     font-size: 0.9rem;
     color: var(--green);
+  }
+
+  .form-msg.error {
+    color: var(--amber);
   }
 
   .feed {
