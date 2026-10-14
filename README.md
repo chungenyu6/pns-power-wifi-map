@@ -15,7 +15,7 @@
 
 ## 目前狀態
 
-MVP 已上線：31 間店、地圖、篩選、店家頁、一鍵 👍👎 投票、留言（審核制）、新增店家。詳見 [PROGRESS.md](docs/PROGRESS.md)。
+MVP 已上線：28 間店、地圖、篩選、店家頁、一鍵 👍👎 投票、留言（審核制）、新增店家。詳見 [PROGRESS.md](docs/PROGRESS.md)。
 
 ## 技術
 
