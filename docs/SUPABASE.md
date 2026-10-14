@@ -21,6 +21,33 @@
 - **還沒跑之前**：網站照常運作，但投票不能收回，店家頁的「Good for working?」「Quiet enough?」也送不出去。
 - **跑完之後**：再按一次同一個按鈕就會收回；從 👎 改成 👍 時，舊的票會真的被刪掉。
 
+## 升級 003：防灌票改用真實 IP（2026-10-14）
+
+**問題**：原本用 `X-Forwarded-For` 的第一個 IP 判斷「同一人 10 分鐘最多 6 次」，但訪客可以自己填這個值。2026-10-14 實測：7 個假 IP 全部送出成功，也就是可以無限灌票。
+
+**修法**：改用 Cloudflare 設定的 `CF-Connecting-IP`（訪客改不了）。萬一沒有這個標頭，就退回原本的做法，不會變得更糟。
+
+1. SQL Editor 貼上 [`supabase/migrations/003_rate_limit_real_ip.sql`](../supabase/migrations/003_rate_limit_real_ip.sql) 並按 Run。
+2. 在終端機確認現在用的是哪個標頭（只會回傳名稱，不會顯示 IP）：
+   ```sh
+   curl -s -X POST "https://isncpzrcsohfolpsxmgm.supabase.co/rest/v1/rpc/rate_limit_ip_source" \
+     -H "apikey: sb_publishable_wy_qR1FWdTWzkFTHb50ntw_m4queuCV" -H "Content-Type: application/json" -d '{}'
+   ```
+   看到 `"cf-connecting-ip"` 就對了。如果是 `"x-forwarded-for"`，代表 Supabase 沒有提供這個標頭，修正沒有生效，跟 Claude 說。
+3. 重跑灌票測試（10 分鐘後再跑，避免被之前的測試影響）：
+   ```sh
+   for i in 1 2 3 4 5 6 7; do
+     curl -s -o /dev/null -w "$i: %{http_code}\n" -X POST \
+       "https://isncpzrcsohfolpsxmgm.supabase.co/rest/v1/reports" \
+       -H "apikey: sb_publishable_wy_qR1FWdTWzkFTHb50ntw_m4queuCV" \
+       -H "Content-Type: application/json" \
+       -H "X-Forwarded-For: 10.0.0.$i" \
+       -d '{"shop_slug":"test-ratelimit","wifi_works":true}'
+   done
+   ```
+   第 7 次應該是 **400**（被擋）。
+4. 清掉測試資料：Table Editor → `reports` → 篩選 `shop_slug` = `test-ratelimit` → 全選 → Delete。
+
 ## 設定 secret key（審核腳本 + 新留言通知要用）
 
 Secret key 在 Supabase 後台 → **Project Settings → API Keys → Secret keys**（`sb_secret_` 開頭）。**不要貼在對話裡。**
@@ -70,7 +97,7 @@ Secret key 在 Supabase 後台 → **Project Settings → API Keys → Secret ke
 | 新增店家建議（`shop_slug = new-shop`） | 不公開，審核後由 Claude 建成店家資料 |
 | 有文字留言或 Wi-Fi 密碼 | 你改成 `approved` 之後 |
 
-- 同一個 IP 10 分鐘內最多送 6 次（防洗版）。
+- 同一個 IP 10 分鐘內最多送 6 次（防洗版；003 之後用 Cloudflare 提供的真實 IP，訪客偽造不了）。
 - IP 只存雜湊值，而且網站訪客讀不到。
 
 ## 金鑰
