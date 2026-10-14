@@ -1,11 +1,16 @@
 # Seeded from OpenStreetMap node/7700024088
 name: Sea Barr of Stars
+status: closed
 area: westside
 address: 3801 Mobile Highway, Pensacola, FL 32505
 lat: 30.424343
 lng: -87.263368
 links: {}
 sources:
+  - type: web
+    date: 2026-10-14
+    note: Restaurantji lists this cafe as closed; owner removed it from the map
+    url: https://www.restaurantji.com/fl/pensacola/sea-barr-of-stars-/
   - type: osm
     date: 2026-10-12
     url: https://www.openstreetmap.org/node/7700024088

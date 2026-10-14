@@ -4,7 +4,9 @@ area: downtown
 address: 8 South Palafox Street, Pensacola, FL 32501
 lat: 30.412526
 lng: -87.215148
-links: {}
+links:
+  website: https://www.fosko.com/
+  instagram: https://www.instagram.com/fosko_coffee_barre/
 sources:
   - type: osm
     date: 2026-10-12

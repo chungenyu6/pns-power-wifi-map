@@ -128,6 +128,7 @@ export async function initVotes(): Promise<Tallies> {
         const v = btn.dataset.v as 'up' | 'down';
         const prev = loadMine(slug, q);
         const cancelling = prev?.v === v;
+        const before = { last: t.last, lastUp: t.lastUp };
 
         // Optimistic update first, so the tap feels instant.
         if (prev) t[prev.v] = Math.max(0, t[prev.v] - 1);
@@ -150,7 +151,10 @@ export async function initVotes(): Promise<Tallies> {
           // Put things back the way they were.
           if (!cancelling) t[v] = Math.max(0, t[v] - 1);
           if (prev) t[prev.v]++;
+          Object.assign(t, before);
           paint(prev);
+          el.classList.add('failed');
+          setTimeout(() => el.classList.remove('failed'), 4000);
         } finally {
           busy = false;
           document.dispatchEvent(new CustomEvent('votes:changed', { detail: tallies }));

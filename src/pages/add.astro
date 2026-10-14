@@ -53,6 +53,10 @@ import Base from '../layouts/Base.astro';
 
   const form = document.querySelector<HTMLFormElement>('.add-form')!;
   const msg = form.querySelector<HTMLElement>('.form-msg')!;
+  const say = (text: string, error = false) => {
+    msg.textContent = text;
+    msg.classList.toggle('error', error);
+  };
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -62,7 +66,7 @@ import Base from '../layouts/Base.astro';
     const name = val('name');
     const address = val('address');
     if (!name || !address) {
-      msg.textContent = 'Add the shop name and where it is.';
+      say('Add the shop name and where it is.', true);
       return;
     }
     const notes = val('notes');
@@ -70,7 +74,7 @@ import Base from '../layouts/Base.astro';
     const comment = [`NEW SHOP: ${name}`, `Where: ${address}`, notes && `Notes: ${notes}`].filter(Boolean).join('\n');
     const button = form.querySelector('button')!;
     button.disabled = true;
-    msg.textContent = 'Sending…';
+    say('Sending…');
     try {
       await submitReport({
         shop_slug: 'new-shop',
@@ -78,10 +82,10 @@ import Base from '../layouts/Base.astro';
         ...(val('wifi') && { wifi_works: val('wifi') === 'yes' }),
         ...(val('outlets') && { outlets: val('outlets') === 'yes' ? 'some' : 'none' }),
       });
-      msg.textContent = "Thanks! We'll check it out and add it to the map.";
+      say("Thanks! We'll check it out and add it to the map.");
       form.reset();
     } catch (err) {
-      msg.textContent = (err as Error).message;
+      say((err as Error).message, true);
     } finally {
       button.disabled = false;
     }
@@ -185,5 +189,9 @@ import Base from '../layouts/Base.astro';
     margin: 0;
     font-size: 0.9rem;
     color: var(--green);
+  }
+
+  .form-msg.error {
+    color: var(--amber);
   }
 </style>

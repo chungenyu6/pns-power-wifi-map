@@ -282,3 +282,26 @@ test('phones get the list first; the map library loads only when the map is open
   await expect(page.locator('#map-wrap')).toBeVisible();
   await expect(page.locator('.maplibregl-popup')).toContainText('Foxtail Coffee');
 });
+
+test('a vote that fails to send is undone and says so; offline tips get a readable error', async ({ page }) => {
+  await page.route('**/rest/v1/reports**', (route) =>
+    route.request().method() === 'POST'
+      ? route.abort('internetdisconnected')
+      : route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }),
+  );
+  await page.goto('./');
+  const card = page.locator('.card[data-slug="bodacious-brew"]');
+  await expect(card.locator('.fresh')).toHaveText('Not confirmed yet');
+  const vote = card.locator('.vote[data-q="wifi"]');
+  await vote.locator('[data-v="up"]').click();
+  await expect(vote).toHaveClass(/failed/);
+  await expect(vote.locator('[data-v="up"]')).toHaveAttribute('aria-pressed', 'false');
+  await expect(vote.locator('[data-v="up"] b')).toHaveText('0');
+  await expect(card.locator('.fresh')).toHaveText('Not confirmed yet');
+
+  await page.goto('./shops/bodacious-brew');
+  await page.locator('.report textarea[name="comment"]').fill('Back tables have outlets');
+  await page.locator('.report form button[type="submit"]').click();
+  await expect(page.locator('.report .form-msg')).toHaveText('Could not send. Try again in a moment.');
+  await expect(page.locator('.report .form-msg')).toHaveClass(/error/);
+});

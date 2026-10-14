@@ -53,15 +53,25 @@ export function recentReports(hours = 48): Promise<Report[]> {
   return get(`created_at=gte.${since}&order=created_at.desc&limit=2000`);
 }
 
+const SEND_FAILED = 'Could not send. Try again in a moment.';
+
+// fetch() rejects with a bare "Failed to fetch" when offline; show people something readable instead.
+async function post(url: string, init: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, { ...init, method: 'POST' });
+  } catch {
+    throw new Error(SEND_FAILED);
+  }
+}
+
 async function errorMessage(res: Response): Promise<string> {
   const body = await res.json().catch(() => ({}));
-  return body.message?.includes('Too many') ? body.message : 'Could not send. Try again in a moment.';
+  return body.message?.includes('Too many') ? body.message : SEND_FAILED;
 }
 
 /** Tips, passwords and new-shop suggestions (reviewed before they show up). */
 export async function submitReport(report: NewReport): Promise<void> {
-  const res = await fetch(`${REST}/reports`, {
-    method: 'POST',
+  const res = await post(`${REST}/reports`, {
     headers: { ...headers, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
     body: JSON.stringify(report),
   });
@@ -74,8 +84,7 @@ export type VoteReceipt = { id: number; token: string } | null;
 export async function submitVote(report: NewReport): Promise<VoteReceipt> {
   const token = crypto.randomUUID();
   const send = (body: object) =>
-    fetch(`${REST}/reports?select=id`, {
-      method: 'POST',
+    post(`${REST}/reports?select=id`, {
       headers: { ...headers, 'Content-Type': 'application/json', Prefer: 'return=representation' },
       body: JSON.stringify(body),
     });

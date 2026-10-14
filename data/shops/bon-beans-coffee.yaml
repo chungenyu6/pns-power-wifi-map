@@ -10,6 +10,9 @@ wifi:
   password: unknown
 noise: quiet
 laptop_friendly: yes
+links:
+  website: https://www.bonbeans.com/
+  facebook: https://www.facebook.com/bonbeanscoffee/
 sources:
   - type: web
     date: 2026-10-12

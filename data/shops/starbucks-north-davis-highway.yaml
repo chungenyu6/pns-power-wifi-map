@@ -1,5 +1,6 @@
 # Added by hand
 name: Starbucks
+status: closed
 chain: true
 area: university
 address: 10015 N Davis Hwy, Pensacola, FL 32514
@@ -11,6 +12,10 @@ wifi:
 links:
   website: https://www.starbucks.com/store-locator
 sources:
+  - type: web
+    date: 2026-10-14
+    note: MapQuest lists Starbucks @ UWF Village as closed; owner removed it from the map
+    url: https://www.mapquest.com/us/florida/starbucks--uwf-village-433618539
   - type: official-site
     date: 2026-10-12
     note: Starbucks offers free Wi-Fi in its stores
