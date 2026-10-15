@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { FRESH_DAYS } from '../lib/meta';
+import Email from '../components/Email.astro';
 ---
 
 <Base title="About" description="How 850 Sip & Charge Map collects and checks its coffee shop Wi-Fi and outlet info.">
@@ -57,11 +58,12 @@ import { FRESH_DAYS } from '../lib/meta';
       It's free, with no ads and no sign-up. If something's out of date, tap 👍 or 👎 or leave a tip. That's what keeps
       it useful for the next person.
     </p>
+    <p>Run a shop and spotted something wrong, or just want to say hi? Email me at <Email />.</p>
 
     <h2>Credits</h2>
     <p>
-      Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>. Map tiles by
-      <a href="https://openfreemap.org">OpenFreeMap</a>. Built with <a href="https://astro.build">Astro</a> and
+      Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>. Map tiles by{' '}
+      <a href="https://openfreemap.org">OpenFreeMap</a>. Built with <a href="https://astro.build">Astro</a> and{' '}
       <a href="https://maplibre.org">MapLibre</a>.
     </p>
   </article>

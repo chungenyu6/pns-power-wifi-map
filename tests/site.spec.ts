@@ -305,3 +305,13 @@ test('a vote that fails to send is undone and says so; offline tips get a readab
   await expect(page.locator('.report .form-msg')).toHaveText('Could not send. Try again in a moment.');
   await expect(page.locator('.report .form-msg')).toHaveClass(/error/);
 });
+
+test('contact email becomes a mailto link but is not in the page source as one piece', async ({ page, request }) => {
+  const html = await (await request.get('./about')).text();
+  expect(html).not.toContain('johnnyu.creator@gmail.com');
+  await page.goto('./about');
+  const link = page.locator('article a.email');
+  await expect(link).toHaveText('johnnyu.creator@gmail.com');
+  await expect(link).toHaveAttribute('href', /^mailto:johnnyu\.creator@gmail\.com\?subject=/);
+  await expect(page.locator('.site-footer a.email')).toHaveText('johnnyu.creator@gmail.com');
+});

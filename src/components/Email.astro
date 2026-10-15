@@ -1,0 +1,16 @@
+---
+// Contact email. The address is never in the HTML as one piece, so simple spam scrapers miss it;
+// the script below turns it into a normal mailto link. Without JavaScript it still reads fine.
+const user = 'johnnyu.creator';
+const domain = 'gmail.com';
+---
+
+<a class="email" data-u={user} data-d={domain}>{user} [at] {domain}</a>
+
+<script>
+  for (const a of document.querySelectorAll<HTMLAnchorElement>('a.email[data-u]')) {
+    const address = `${a.dataset.u}@${a.dataset.d}`;
+    a.href = `mailto:${address}?subject=${encodeURIComponent('850 Sip & Charge Map')}`;
+    a.textContent = address;
+  }
+</script>
