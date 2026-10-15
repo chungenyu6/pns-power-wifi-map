@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import Logo from '../components/Logo.astro';
 import Icon from '../components/Icon.astro';
+import Email from '../components/Email.astro';
 
 interface Props {
   title?: string;
@@ -90,7 +91,7 @@ const nav = [
             person.
           </p>
           <p>
-            <a href={`${base}/about`}>How the data works</a>
+            <a href={`${base}/about`}>How the data works</a> · Questions or corrections? <Email />
           </p>
         </footer>
       )
