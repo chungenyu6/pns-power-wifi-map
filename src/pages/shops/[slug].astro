@@ -67,7 +67,7 @@ const rows = [
 ];
 ---
 
-<Base title={d.name} description={`Wi-Fi, outlets and laptop info for ${d.name} in ${AREAS[d.area]}, Pensacola.`}>
+<Base title={`${d.name}${d.chain ? `, ${d.address.split(',')[0]}` : ''}: Wi-Fi & Outlets`} description={`Wi-Fi, outlets and laptop info for ${d.name} in ${AREAS[d.area]}, Pensacola.`}>
   <article class="container" data-shop={shop.id}>
     <a class="back" href={`${base}/`}><Icon name="arrow-left" /> All shops</a>
 
